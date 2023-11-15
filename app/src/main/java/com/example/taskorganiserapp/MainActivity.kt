@@ -1,5 +1,6 @@
 package com.example.taskorganiserapp
 
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Gravity
@@ -18,43 +19,28 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var taskViewModel: TaskViewModel
+    private lateinit var taskListViewModel: TaskListViewModel
+    private lateinit var sideSheetDialog: SideSheetDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         taskViewModel = ViewModelProvider(this)[TaskViewModel::class.java]
+        taskListViewModel = ViewModelProvider(this)[TaskListViewModel::class.java]
+        sideSheetDialog = SideSheetDialog(this)
+
+        setRecyclersView()
+        setSideSheet()
+
         binding.addTaskFAB.setOnClickListener {
             TaskCreator(null).show(supportFragmentManager, "newTaskTag")
         }
 
         binding.topAppBar.setNavigationOnClickListener {
-            val sideSheetDialog = SideSheetDialog(this)
-            sideSheetDialog.behavior.addCallback(object : SideSheetCallback() {
-                override fun onStateChanged(sheet: View, newState: Int) {
-
-                    if (newState == SideSheetBehavior.STATE_DRAGGING) {
-                        sideSheetDialog.behavior.state = SideSheetBehavior.STATE_EXPANDED
-                    }
-                }
-                override fun onSlide(sheet: View, slideOffset: Float) {
-                }
-            })
-
-            val inflater = layoutInflater.inflate(R.layout.side_view_of_tasklist, null)
-            val btnClose = inflater.findViewById<ImageButton>(R.id.backButton)
-
-            btnClose.setOnClickListener {
-                sideSheetDialog.dismiss()
-            }
-            sideSheetDialog.isDismissWithSheetAnimationEnabled = true
-            sideSheetDialog.setSheetEdge(Gravity.START)
-            sideSheetDialog.setCanceledOnTouchOutside(true)
-            sideSheetDialog.setContentView(inflater)
             sideSheetDialog.show()
         }
-
-        setRecyclerView()
     }
 
     override fun editTaskItem(task: TaskItem) {
@@ -69,7 +55,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener {
         taskViewModel.setUncompleted(task)
     }
 
-    private fun setRecyclerView() {
+    private fun setRecyclersView() {
         val mainActivity = this
         taskViewModel.taskItems.observe(this){
             binding.taskList.apply {
@@ -77,5 +63,33 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener {
                 adapter = TaskItemAdapter(it, mainActivity)
             }
         }
+        taskListViewModel.taskLists.observe(this){
+            sideSheetDialog.
+        }
+    }
+
+    @SuppressLint("InflateParams")
+    private fun setSideSheet() {
+        sideSheetDialog.behavior.addCallback(object : SideSheetCallback() {
+            override fun onStateChanged(sheet: View, newState: Int) {
+
+                if (newState == SideSheetBehavior.STATE_DRAGGING) {
+                    sideSheetDialog.behavior.state = SideSheetBehavior.STATE_EXPANDED
+                }
+            }
+            override fun onSlide(sheet: View, slideOffset: Float) {
+            }
+        })
+
+        val inflater = layoutInflater.inflate(R.layout.side_view_of_tasklist, null)
+        val backButton = inflater.findViewById<ImageButton>(R.id.backButton)
+
+        backButton.setOnClickListener {
+            sideSheetDialog.dismiss()
+        }
+        sideSheetDialog.isDismissWithSheetAnimationEnabled = true
+        sideSheetDialog.setSheetEdge(Gravity.START)
+        sideSheetDialog.setCanceledOnTouchOutside(true)
+        sideSheetDialog.setContentView(inflater)
     }
 }
