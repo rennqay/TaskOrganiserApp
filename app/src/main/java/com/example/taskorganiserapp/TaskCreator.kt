@@ -56,7 +56,7 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
 
     private fun addSubtask() {
         val name = binding.subtaskName.text.toString()
-        subtaskViewModel.addSubtaskItem(SubtaskItem(name, false))
+        subtaskViewModel.addSubtaskItem(SubtaskItem(name, completed = false, true))
     }
 
     @SuppressLint("SetTextI18n")
@@ -133,8 +133,7 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
     {
         val name = binding.name.text.toString()
         val note = binding.note.text.toString()
-
-        var priority = 1
+        var priority = 1 // default setting
 
         if(binding.high.isChecked)
             priority = 2
@@ -142,11 +141,13 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
             priority = 3
 
         if(task == null) {
-            val newTask = TaskItem(name, note, time, date, priority,false)
+            subtaskViewModel.setCreatorMode(false)
+            val newTask = TaskItem(name, note, time, date, priority,false, subtaskViewModel.subtaskItems.value?.toList())
             taskViewModel.addTaskItem(newTask)
         }
         else
             taskViewModel.updateTaskItem(task!!.id, name, note, time, date, priority)
+
 
         dismiss()
     }

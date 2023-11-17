@@ -2,6 +2,7 @@ package com.example.taskorganiserapp
 
 import android.content.Context
 import android.graphics.Paint
+import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.example.taskorganiserapp.databinding.SubtaskItemBinding
 import com.example.taskorganiserapp.databinding.TaskItemBinding
@@ -29,8 +30,13 @@ class SubtaskItemViewHolder (
                 clickListener.setIncompleteSubtaskItem(subtask)
         }
 
-        binding.deleteSubtask.setOnClickListener {
-            clickListener.deleteSubtaskItem(subtask)
+        if(subtask.creatorMode) {
+            binding.deleteSubtask.visibility = View.VISIBLE
+            binding.deleteSubtask.setOnClickListener {
+                clickListener.deleteSubtaskItem(subtask)
+            }
         }
+        else
+            binding.deleteSubtask.visibility = View.GONE
     }
 }

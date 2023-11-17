@@ -44,4 +44,11 @@ class SubtaskViewModel: ViewModel() {
         buffer.completed = false
         subtaskItems.postValue(list)
     }
+
+    fun setCreatorMode(boolean: Boolean) {
+        val list = subtaskItems.value
+            for (subtaskItem in list!!) {
+                subtaskItem.creatorMode = boolean
+            }
+    }
 }

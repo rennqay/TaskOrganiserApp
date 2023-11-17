@@ -14,6 +14,9 @@ class TaskViewModel: ViewModel() {
         taskItems.value = mutableListOf()
     }
 
+    fun setTaskList(taskList: TaskList) {
+        taskItems.postValue(taskList.tasks.toMutableList())
+    }
     fun addTaskItem(newTask: TaskItem) {
         val taskList = taskItems.value
         taskList!!.add(newTask)

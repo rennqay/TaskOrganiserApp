@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.ColorFilter
 import android.graphics.Paint
 import android.view.View
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.taskorganiserapp.databinding.TaskItemBinding
 import java.time.format.DateTimeFormatter
@@ -12,7 +13,8 @@ import java.time.format.DateTimeFormatter
 class TaskItemViewHolder(
     private val context: Context,
     private val binding: TaskItemBinding,
-    private val clickListener: TaskItemClickListener
+    private val clickListener: TaskItemClickListener,
+    private val subtaskItemClickListener: SubtaskItemClickListener
 ): RecyclerView.ViewHolder(binding.root)
 {
     private val timeFormat = DateTimeFormatter.ofPattern("HH:mm")
@@ -51,6 +53,12 @@ class TaskItemViewHolder(
             binding.taskTime.paintFlags = binding.taskTime.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
             binding.taskDate.paintFlags = binding.taskDate.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
         }
+
+        if(!task.subtasks.isNullOrEmpty())
+            binding.subtasks.apply {
+                layoutManager = LinearLayoutManager(context)
+                adapter = SubtaskItemAdapter(task.subtasks!!, subtaskItemClickListener)
+            }
 
         binding.taskCheckBox.setImageResource(task.setStateImage())
 

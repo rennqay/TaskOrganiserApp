@@ -11,6 +11,7 @@ data class TaskItem(
     var date: LocalDate?,
     var priority: Int,
     var completed: Boolean,
+    var subtasks: List<SubtaskItem>?,
     var id: UUID = UUID.randomUUID()
     ) {
 
