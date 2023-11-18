@@ -2,7 +2,6 @@ package com.example.taskorganiserapp
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import java.util.UUID
 
 class TaskListViewModel: ViewModel() {
     var listOfTaskLists = MutableLiveData<MutableList<TaskList>>()
@@ -16,4 +15,16 @@ class TaskListViewModel: ViewModel() {
         buffer!!.add(newTaskList)
         listOfTaskLists.postValue(buffer)
     }
+
+    fun deleteTaskList(taskList: TaskList) {
+        listOfTaskLists.value!!.remove(taskList)
+    }
+
+    fun updateTaskList(taskList: TaskList) {
+        val buffer = listOfTaskLists.value
+        val editedTaskList = buffer!!.find { it.id == taskList.id } !!
+        editedTaskList.name = taskList.name
+        listOfTaskLists.postValue(buffer)
+    }
+
 }

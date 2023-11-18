@@ -40,5 +40,4 @@ class TaskListsAdapter(
 
 interface TaskListClickListener {
     fun setTaskList(taskList: TaskList)
-
 }
