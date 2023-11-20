@@ -1,5 +1,7 @@
 package com.example.taskorganiserapp
 
+import android.app.NotificationManager
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Gravity
@@ -33,7 +35,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
         taskViewModel = ViewModelProvider(this)[TaskViewModel::class.java]
         taskListViewModel = ViewModelProvider(this)[TaskListViewModel::class.java]
         sideSheetDialog = SideSheetDialog(this)
-        currentTaskList = TaskList("Testowa lista", mutableListOf())
+        currentTaskList = TaskList("Wszystkie", mutableListOf())
         taskListViewModel.addTaskList(currentTaskList)
 
         setSideSheet()
@@ -42,7 +44,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
         binding.topAppBar.title = currentTaskList.name
 
         binding.addTaskFAB.setOnClickListener {
-            TaskCreator(null).show(supportFragmentManager, "newTaskTag")
+            TaskCreator(null, this).show(supportFragmentManager, "newTaskTag")
         }
 
         binding.topAppBar.setNavigationOnClickListener {
@@ -70,14 +72,14 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
         binding.topAppBar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.deleteList -> {
-                    if(taskListViewModel.listOfTaskLists.value!!.size > 1) {
+                    if(currentTaskList != taskListViewModel.listOfTaskLists.value!!.first()) {
                         taskListViewModel.deleteTaskList(currentTaskList)
                         taskViewModel.setTaskList(taskListViewModel.listOfTaskLists.value!!.first())
                         currentTaskList = taskListViewModel.listOfTaskLists.value!!.first()
                         binding.topAppBar.title = taskListViewModel.listOfTaskLists.value!!.first().name
                     }
                     else
-                        Toast.makeText(this, "Cannot delete last list", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Cannot delete first list", Toast.LENGTH_SHORT).show()
                     true
                 }
                 R.id.search -> {
@@ -153,7 +155,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
     }
 
     override fun editTaskItem(task: TaskItem) {
-        TaskCreator(task).show(supportFragmentManager, "editTaskTag")
+        TaskCreator(task, this).show(supportFragmentManager, "editTaskTag")
     }
 
     override fun setCompleteTaskItem(task: TaskItem) {

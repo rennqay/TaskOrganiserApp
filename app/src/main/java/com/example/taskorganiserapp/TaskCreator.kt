@@ -1,11 +1,18 @@
 package com.example.taskorganiserapp
 
 import android.annotation.SuppressLint
+import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.TimePickerDialog
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.taskorganiserapp.databinding.TaskCreatorBinding
@@ -14,9 +21,10 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import java.util.Calendar
 import java.util.Date
 
-class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), SubtaskItemClickListener {
+class TaskCreator(private var task: TaskItem?, private val context: Context) : BottomSheetDialogFragment(), SubtaskItemClickListener {
 
     private lateinit var binding: TaskCreatorBinding
     private lateinit var taskViewModel: TaskViewModel
@@ -28,6 +36,7 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
         super.onViewCreated(view, savedInstanceState)
         val activity = requireActivity()
 
+        createNotificationChannel()
         prepareCreator()
 
         taskViewModel = ViewModelProvider(activity)[TaskViewModel::class.java]
@@ -52,6 +61,53 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
         binding.datePickerButton.setOnClickListener {
             openDatePicker()
         }
+        binding.setReminderButton.setOnClickListener {
+            setReminder()
+        }
+    }
+
+    private fun createNotificationChannel() {
+        val name = "Notification Channel"
+        val desc = "Some Description"
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val channel = NotificationChannel(channelID, name, importance)
+        channel.description = desc
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+        if(notificationManager != null) {
+            notificationManager.createNotificationChannel(channel)
+            println("Notification channel set")
+        }
+        else
+            println("Notification channel is not set")
+    }
+
+    private fun setReminder() {
+        val intent = Intent(context.applicationContext, AlarmReceiver::class.java)
+        intent.putExtra(titleExtra, binding.name.text.toString())
+        intent.putExtra(messageExtra, binding.note.text.toString())
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context.applicationContext,
+            notificationID,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
+
+        if(alarmManager != null)
+            println("Alarm manager set")
+        else
+            println("Alarm manager is not set")
+
+        val calendar = Calendar.getInstance()
+        calendar.set(date!!.year, date!!.monthValue, date!!.dayOfMonth, time!!.hour, time!!.minute)
+        alarmManager?.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            pendingIntent
+        )
+        Toast.makeText(activity, "Alarm set on: ${calendar.time}", Toast.LENGTH_SHORT).show()
     }
 
     private fun addSubtask() {
@@ -97,7 +153,7 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
 
         datePicker.show(activity.supportFragmentManager, "datePicker" )
         datePicker.addOnPositiveButtonClickListener {
-            date = Date(it).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            date = Date(it).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
             updateDateButtonText()
         }
     }
@@ -124,7 +180,7 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
         binding.timePickerButton.text = String.format("%02d:%02d", time!!.hour, time!!.minute)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = TaskCreatorBinding.inflate(inflater,container,false)
         return binding.root
     }
