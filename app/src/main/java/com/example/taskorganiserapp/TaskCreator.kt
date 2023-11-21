@@ -19,10 +19,13 @@ import com.example.taskorganiserapp.databinding.TaskCreatorBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.datepicker.MaterialDatePicker
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
+import java.util.TimeZone
+import kotlin.system.measureTimeMillis
 
 class TaskCreator(private var task: TaskItem?, private val context: Context) : BottomSheetDialogFragment(), SubtaskItemClickListener {
 
@@ -73,12 +76,8 @@ class TaskCreator(private var task: TaskItem?, private val context: Context) : B
         val channel = NotificationChannel(channelID, name, importance)
         channel.description = desc
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-        if(notificationManager != null) {
-            notificationManager.createNotificationChannel(channel)
-            println("Notification channel set")
-        }
-        else
-            println("Notification channel is not set")
+        notificationManager?.createNotificationChannel(channel)
+
     }
 
     private fun setReminder() {
@@ -95,19 +94,14 @@ class TaskCreator(private var task: TaskItem?, private val context: Context) : B
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
 
-        if(alarmManager != null)
-            println("Alarm manager set")
-        else
-            println("Alarm manager is not set")
-
-        val calendar = Calendar.getInstance()
-        calendar.set(date!!.year, date!!.monthValue, date!!.dayOfMonth, time!!.hour, time!!.minute)
+        val localDateTime = LocalDateTime.of(date, time)
+        val timeInMillis = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
         alarmManager?.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
-            calendar.timeInMillis,
+            timeInMillis,
             pendingIntent
         )
-        Toast.makeText(activity, "Alarm set on: ${calendar.time}", Toast.LENGTH_SHORT).show()
+        Toast.makeText(activity, "Alarm set on: ${localDateTime.toString()}", Toast.LENGTH_SHORT).show()
     }
 
     private fun addSubtask() {

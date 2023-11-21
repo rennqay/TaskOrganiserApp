@@ -9,7 +9,7 @@ import androidx.core.app.NotificationCompat
 const val notificationID = 1
 const val channelID = "channel0"
 const val titleExtra = "titleExtra"
-const val messageExtra = "MessageExtra"
+const val messageExtra = "messageExtra"
 
 class AlarmReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -22,5 +22,6 @@ class AlarmReceiver: BroadcastReceiver() {
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(notificationID, notification)
+        println("message sent!")
     }
 }
