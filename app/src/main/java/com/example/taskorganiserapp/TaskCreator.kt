@@ -27,11 +27,12 @@ import java.util.Date
 import java.util.TimeZone
 import kotlin.system.measureTimeMillis
 
-class TaskCreator(private var task: TaskItem?, private val context: Context) : BottomSheetDialogFragment(), SubtaskItemClickListener {
+class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), SubtaskItemClickListener {
 
     private lateinit var binding: TaskCreatorBinding
     private lateinit var taskViewModel: TaskViewModel
     private lateinit var subtaskViewModel: SubtaskViewModel
+    private lateinit var reminderService: ReminderService
     private var time: LocalTime? = null
     private var date: LocalDate? = null
 
@@ -39,11 +40,11 @@ class TaskCreator(private var task: TaskItem?, private val context: Context) : B
         super.onViewCreated(view, savedInstanceState)
         val activity = requireActivity()
 
-        createNotificationChannel()
-        prepareCreator()
-
         taskViewModel = ViewModelProvider(activity)[TaskViewModel::class.java]
         subtaskViewModel = ViewModelProvider(activity)[SubtaskViewModel::class.java]
+        reminderService = ReminderService(activity)
+        reminderService.createNotificationChannel()
+        prepareCreator()
 
         subtaskViewModel.subtaskItems.observe(this) {
             binding.subtasks.apply {
@@ -65,43 +66,9 @@ class TaskCreator(private var task: TaskItem?, private val context: Context) : B
             openDatePicker()
         }
         binding.setReminderButton.setOnClickListener {
-            setReminder()
+            //if(date != null)
+                //reminderService.setReminder()
         }
-    }
-
-    private fun createNotificationChannel() {
-        val name = "Notification Channel"
-        val desc = "Some Description"
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val channel = NotificationChannel(channelID, name, importance)
-        channel.description = desc
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-        notificationManager?.createNotificationChannel(channel)
-
-    }
-
-    private fun setReminder() {
-        val intent = Intent(context.applicationContext, AlarmReceiver::class.java)
-        intent.putExtra(titleExtra, binding.name.text.toString())
-        intent.putExtra(messageExtra, binding.note.text.toString())
-
-        val pendingIntent = PendingIntent.getBroadcast(
-            context.applicationContext,
-            notificationID,
-            intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
-
-        val localDateTime = LocalDateTime.of(date, time)
-        val timeInMillis = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        alarmManager?.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            timeInMillis,
-            pendingIntent
-        )
-        Toast.makeText(activity, "Alarm set on: ${localDateTime.toString()}", Toast.LENGTH_SHORT).show()
     }
 
     private fun addSubtask() {

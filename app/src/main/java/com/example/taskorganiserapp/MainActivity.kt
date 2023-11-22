@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
         binding.topAppBar.title = currentTaskList.name
 
         binding.addTaskFAB.setOnClickListener {
-            TaskCreator(null, this).show(supportFragmentManager, "newTaskTag")
+            TaskCreator(null).show(supportFragmentManager, "newTaskTag")
         }
 
         binding.topAppBar.setNavigationOnClickListener {
@@ -160,7 +160,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
     }
 
     override fun editTaskItem(task: TaskItem) {
-        TaskCreator(task, this).show(supportFragmentManager, "editTaskTag")
+        TaskCreator(task).show(supportFragmentManager, "editTaskTag")
     }
 
     override fun setCompleteTaskItem(task: TaskItem) {

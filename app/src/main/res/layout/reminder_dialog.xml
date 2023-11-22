@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+<!--    <TextView-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_margin="12dp"-->
+<!--        android:text="Set Reminder"-->
+<!--        android:textStyle="bold"-->
+<!--        android:textSize="16sp"/>-->
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/reminderType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        app:selectionRequired="true"
+        app:singleSelection="true"
+        app:checkedButton="@+id/notification">
+
+        <Button
+            style="?attr/materialButtonOutlinedStyle"
+            android:id="@+id/notification"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Notification"/>
+
+        <Button
+            style="?attr/materialButtonOutlinedStyle"
+            android:id="@+id/alarm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Alarm"/>
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <Switch
+        android:id="@+id/wholeDay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:text="Set for whole day"
+        tools:ignore="UseSwitchCompatOrMaterialXml,TouchTargetSizeCheck" />
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/reminderTimeType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp">
+        <Button
+            style="?attr/materialButtonOutlinedStyle"
+            android:id="@+id/onTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="On Time"
+            />
+        <Button
+            style="?attr/materialButtonOutlinedStyle"
+            android:id="@+id/beforeTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Before Time"
+            />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp">
+
+        <NumberPicker
+            android:id="@+id/timeValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="6dp"
+            android:layout_weight="1"/>
+
+        <NumberPicker
+            android:id="@+id/timeType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="6dp"
+            android:layout_weight="1"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/reminderValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginBottom="12dp"
+        android:textAlignment="center"
+        android:text="Reminder set for"
+        android:textStyle="bold"
+        android:textSize="16sp"/>
+
+</LinearLayout>
