@@ -66,8 +66,10 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
             openDatePicker()
         }
         binding.setReminderButton.setOnClickListener {
-            //if(date != null)
-                //reminderService.setReminder()
+            if(date != null)
+                reminderService.reminderCreator(date!!, time)
+            else
+                Toast.makeText(context, "Deadline is not set!", Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -6,8 +6,12 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.view.LayoutInflater
+import android.widget.Button
+import android.widget.NumberPicker
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import com.example.taskorganiserapp.databinding.ReminderDialogBinding
 import com.example.taskorganiserapp.databinding.TaskCreatorBinding
@@ -18,20 +22,15 @@ import java.time.ZoneId
 
 const val NOTIFICATION = true
 const val ALARM = false
-const val WHOLE_DAY = 0
-const val ON_TIME = 1
-const val BEFORE_TIME = 2
 
 class ReminderService(private val context: Context) {
 
     private lateinit var binding: TaskCreatorBinding
-    private lateinit var reminderDialogBinding: ReminderDialogBinding
     private var timeOffset: Long = 0
     private var reminderType: Boolean = NOTIFICATION // default setting
-    private var reminderTimeType: Int = ON_TIME // default setting
     private val date: LocalDate? = null
     private val time: LocalTime? = null
-
+    
     fun createNotificationChannel() {
         val name = "Notification Channel"
         val desc = "Some Description"
@@ -43,42 +42,36 @@ class ReminderService(private val context: Context) {
 
     }
 
-    fun reminderCreator() {
+    fun reminderCreator(selectedDate: LocalDate, selectedTime: LocalTime?) {
         val reminderDialog = AlertDialog.Builder(context)
         val inflater = LayoutInflater.from(context)
         val dialogLayout = inflater.inflate(R.layout.reminder_dialog, null)
 
-        val timeValue = reminderDialogBinding.timeValue
-        val timeType = reminderDialogBinding.timeType
+        val numberPicker = dialogLayout.findViewById<NumberPicker>(R.id.numberPicker)
+        val unitsPicker = dialogLayout.findViewById<NumberPicker>(R.id.unitsPicker)
         val timeUnits = context.resources.getStringArray(R.array.timeUnits)
 
-        timeValue.minValue = 0
-        timeValue.maxValue = 999
+        numberPicker.minValue = 0
+        numberPicker.maxValue = 999
 
-        timeType.minValue = 0
-        timeType.maxValue = 5
-        timeType.displayedValues = timeUnits
-
-        when(timeType.value) {
-            0 -> timeOffset += timeValue.value * 1000 * 60 // minutes
-            1 -> timeOffset += timeValue.value * 1000 * 60 * 60 // hours
-            2 -> timeOffset += timeValue.value * 1000 * 60 * 60 * 24 // days
-            3 -> timeOffset += timeValue.value * 1000 * 60 * 60 * 24 * 7 // weeks
-            4 -> timeOffset += timeValue.value * 1000 * 60 * 60 * 24 * 30 // months
-            5 -> timeOffset += timeValue.value * 1000 * 60 * 60 * 24 * 30 * 12 // years
-        }
+        unitsPicker.minValue = 0
+        unitsPicker.maxValue = 5
+        unitsPicker.displayedValues = timeUnits
 
         with(reminderDialog) {
             setTitle("Set Reminder")
             setPositiveButton("OK") { _, _ ->
-                if(reminderDialogBinding.alarm.isSelected)
+                if(dialogLayout.findViewById<Button>(R.id.alarm).isSelected)
                     reminderType = ALARM
 
-                if(reminderDialogBinding.beforeTime.isSelected)
-                    reminderTimeType = BEFORE_TIME
-                else if(reminderDialogBinding.wholeDay.isChecked)
-                    reminderTimeType = WHOLE_DAY
-
+                when(unitsPicker.value) {
+                    0 -> timeOffset += numberPicker.value * 1000 * 60 // minutes
+                    1 -> timeOffset += numberPicker.value * 1000 * 60 * 60 // hours
+                    2 -> timeOffset += numberPicker.value * 1000 * 60 * 60 * 24 // days
+                    3 -> timeOffset += numberPicker.value * 1000 * 60 * 60 * 24 * 7 // weeks
+                    4 -> timeOffset += numberPicker.value * 1000 * 60 * 60 * 24 * 30 // months
+                    5 -> timeOffset += numberPicker.value * 1000 * 60 * 60 * 24 * 30 * 12 // years
+                }
                 setReminder()
             }
             setNegativeButton("Cancel") { _, _ -> }
@@ -106,7 +99,7 @@ class ReminderService(private val context: Context) {
 
         alarmManager?.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
-            timeInMillis,
+            timeInMillis-timeOffset,
             pendingIntent
         )
         Toast.makeText(context, "Alarm set on: ${localDateTime.toString()}", Toast.LENGTH_SHORT).show()
