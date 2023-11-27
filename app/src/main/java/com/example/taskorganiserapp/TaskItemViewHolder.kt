@@ -2,7 +2,6 @@ package com.example.taskorganiserapp
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.ColorFilter
 import android.graphics.Paint
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager

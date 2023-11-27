@@ -42,7 +42,7 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
 
         taskViewModel = ViewModelProvider(activity)[TaskViewModel::class.java]
         subtaskViewModel = ViewModelProvider(activity)[SubtaskViewModel::class.java]
-        reminderService = ReminderService(activity)
+        reminderService = ReminderService(activity, binding)
         reminderService.createNotificationChannel()
         prepareCreator()
 
@@ -66,8 +66,12 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
             openDatePicker()
         }
         binding.setReminderButton.setOnClickListener {
-            if(date != null)
-                reminderService.reminderCreator(date!!, time)
+            if(date != null) {
+                if (time == null)
+                    reminderService.reminderCreator(date!!, LocalTime.of(0, 0))
+                else
+                    reminderService.reminderCreator(date!!, time!!)
+            }
             else
                 Toast.makeText(context, "Deadline is not set!", Toast.LENGTH_SHORT).show()
         }
@@ -100,9 +104,13 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
                 2 -> binding.high.isChecked = true
                 3 -> binding.veryHigh.isChecked = true
             }
+            subtaskViewModel.subtaskItems.postValue(task?.subtasks as MutableList<SubtaskItem>?)
         }
-        else
+        else {
             binding.title.text = "Create Task"
+            subtaskViewModel.subtaskItems.value?.clear()
+        }
+        SubtaskItem.creatorMode = true
     }
 
     private fun openDatePicker() {
@@ -167,6 +175,7 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
         else
             taskViewModel.updateTaskItem(task!!.id, name, note, time, date, priority)
 
+        SubtaskItem.creatorMode = false
         dismiss()
     }
 

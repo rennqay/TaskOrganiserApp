@@ -17,7 +17,9 @@ class TaskListViewModel: ViewModel() {
     }
 
     fun deleteTaskList(taskList: TaskList) {
-        listOfTaskLists.value!!.remove(taskList)
+        val buffer = listOfTaskLists.value
+        buffer!!.remove(taskList)
+        listOfTaskLists.postValue(buffer)
     }
 
     fun updateTaskList(taskList: TaskList) {

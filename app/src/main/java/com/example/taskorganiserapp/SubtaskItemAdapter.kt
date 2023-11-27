@@ -17,24 +17,24 @@ class SubtaskItemAdapter(
     class ViewHolder(
         private val context: Context,
         private val binding: SubtaskItemBinding,
-        private val clickListener: SubtaskItemClickListener
+        private val clickListener: SubtaskItemClickListener,
     ): RecyclerView.ViewHolder(binding.root) {
 
         fun bindSubtaskItem(subtask: SubtaskItem) {
             binding.subtaskName.text = subtask.name
 
-            if(subtask.completed)
-                binding.subtaskName.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
-            else
-                binding.subtaskName.paintFlags = binding.subtaskName.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-
             binding.subtaskCheckBox.setImageResource(subtask.setStateImage())
 
             binding.subtaskCheckBox.setOnClickListener {
-                if (!subtask.completed)
+                if (!subtask.completed) {
                     clickListener.setCompleteSubtaskItem(subtask)
-                else
+                    binding.subtaskName.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
+                }
+                else {
                     clickListener.setIncompleteSubtaskItem(subtask)
+                    binding.subtaskName.paintFlags = binding.subtaskName.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                }
+                binding.subtaskCheckBox.setImageResource(subtask.setStateImage())
             }
 
             if(SubtaskItem.creatorMode) {

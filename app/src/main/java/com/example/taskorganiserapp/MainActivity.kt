@@ -183,10 +183,10 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
     }
 
     override fun setCompleteSubtaskItem(subtask: SubtaskItem) {
-        subtaskViewModel.setCompleted(subtask)
+        subtask.completed = true
     }
 
     override fun setIncompleteSubtaskItem(subtask: SubtaskItem) {
-        subtaskViewModel.setUncompleted(subtask)
+        subtask.completed = false
     }
 }
