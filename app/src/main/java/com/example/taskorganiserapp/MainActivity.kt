@@ -14,12 +14,15 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.taskorganiserapp.databinding.ActivityMainBinding
 import com.example.taskorganiserapp.databinding.SideViewOfTasklistBinding
 import com.google.android.material.sidesheet.SideSheetBehavior
 import com.google.android.material.sidesheet.SideSheetCallback
 import com.google.android.material.sidesheet.SideSheetDialog
+import com.google.android.material.snackbar.Snackbar
 import java.util.Calendar
 
 class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickListener, SubtaskItemClickListener {
@@ -40,11 +43,11 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
         taskViewModel = ViewModelProvider(this)[TaskViewModel::class.java]
         taskListViewModel = ViewModelProvider(this)[TaskListViewModel::class.java]
         sideSheetDialog = SideSheetDialog(this)
-        currentTaskList = TaskList("Wszystkie", mutableListOf())
-        taskListViewModel.addTaskList(currentTaskList)
+        currentTaskList = taskListViewModel.listOfTaskLists.value!![0]
 
         setSideSheet()
-        setRecyclersView()
+        setRecyclerView()
+        setGestures()
 
         binding.topAppBar.title = currentTaskList.name
 
@@ -100,7 +103,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
         }
     }
 
-    private fun setRecyclersView() {
+    private fun setRecyclerView() {
         val mainActivity = this
         taskViewModel.taskItems.observe(this){
             binding.taskList.apply {
@@ -133,7 +136,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
             sideSheetDialog.dismiss()
         }
         sideSheetBinding.addTaskListButton.setOnClickListener{
-            val newTaskList = TaskList("Lista", mutableListOf())
+            val newTaskList = TaskList("Lista", mutableListOf(), true)
             val alertDialog = AlertDialog.Builder(this)
             val inflater = layoutInflater
             val dialogLayout = inflater.inflate(R.layout.add_list_dialog, null)
@@ -159,6 +162,36 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
         }
     }
 
+    private fun setGestures() {
+        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val deletedTask: TaskItem = taskViewModel.taskItems.value!![viewHolder.adapterPosition]
+                val position = viewHolder.adapterPosition
+                val listOfDeleted = taskListViewModel.listOfTaskLists.value!![1].tasks.toMutableList()
+
+                if(currentTaskList.tasks != listOfDeleted) {
+                    listOfDeleted.add(deletedTask)
+                    taskListViewModel.listOfTaskLists.value!![1].tasks = listOfDeleted
+                }
+                taskViewModel.taskItems.value!!.removeAt(viewHolder.adapterPosition)
+                binding.taskList.adapter?.notifyItemRemoved(viewHolder.adapterPosition)
+
+                Snackbar.make(binding.taskList, "Deleted task: " + deletedTask.name, Snackbar.LENGTH_LONG)
+                    .setAction("UNDO") {
+                        taskViewModel.taskItems.value!!.add(position, deletedTask)
+                        binding.taskList.adapter?.notifyItemInserted(position)
+                    }.show()
+            }
+        }).attachToRecyclerView(binding.taskList)
+    }
+
     override fun editTaskItem(task: TaskItem) {
         TaskCreator(task).show(supportFragmentManager, "editTaskTag")
     }
@@ -176,6 +209,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
         taskViewModel.setTaskList(taskList)
         currentTaskList = taskList
         binding.topAppBar.title = taskList.name
+        sideSheetDialog.dismiss()
     }
 
     override fun deleteSubtaskItem(subtask: SubtaskItem) {

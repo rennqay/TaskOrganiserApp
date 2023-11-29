@@ -8,6 +8,9 @@ class TaskListViewModel: ViewModel() {
 
     init {
         listOfTaskLists.value = mutableListOf()
+        listOfTaskLists.value!!.add(TaskList("Wszystkie", mutableListOf(), false))
+        listOfTaskLists.value!!.add(TaskList("Usunięte", mutableListOf(), false))
+        listOfTaskLists.value!!.add(TaskList("Ukończone", mutableListOf(), false))
     }
 
     fun addTaskList(newTaskList: TaskList) {
@@ -28,5 +31,4 @@ class TaskListViewModel: ViewModel() {
         editedTaskList.name = taskList.name
         listOfTaskLists.postValue(buffer)
     }
-
 }

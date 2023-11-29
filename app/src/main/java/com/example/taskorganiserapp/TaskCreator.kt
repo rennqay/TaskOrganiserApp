@@ -1,13 +1,7 @@
 package com.example.taskorganiserapp
 
 import android.annotation.SuppressLint
-import android.app.AlarmManager
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.TimePickerDialog
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,13 +13,9 @@ import com.example.taskorganiserapp.databinding.TaskCreatorBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.datepicker.MaterialDatePicker
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
-import java.util.Calendar
 import java.util.Date
-import java.util.TimeZone
-import kotlin.system.measureTimeMillis
 
 class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), SubtaskItemClickListener {
 
@@ -104,7 +94,9 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
                 2 -> binding.high.isChecked = true
                 3 -> binding.veryHigh.isChecked = true
             }
-            subtaskViewModel.subtaskItems.postValue(task?.subtasks as MutableList<SubtaskItem>?)
+
+            if(!task!!.subtasks.isNullOrEmpty())
+                subtaskViewModel.subtaskItems.postValue(task!!.subtasks as MutableList<SubtaskItem>?)
         }
         else {
             binding.title.text = "Create Task"
@@ -173,7 +165,7 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
             taskViewModel.addTaskItem(newTask)
         }
         else
-            taskViewModel.updateTaskItem(task!!.id, name, note, time, date, priority)
+            taskViewModel.updateTaskItem(task!!.id, name, note, time, date, priority, subtaskViewModel.subtaskItems.value?.toList())
 
         SubtaskItem.creatorMode = false
         dismiss()

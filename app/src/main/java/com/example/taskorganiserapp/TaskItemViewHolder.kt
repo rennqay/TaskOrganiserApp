@@ -19,6 +19,10 @@ class TaskItemViewHolder(
     private val timeFormat = DateTimeFormatter.ofPattern("HH:mm")
     private val dateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
+    fun bindDate(task: TaskItem) {
+        binding
+    }
+
     fun bindTaskItem(task: TaskItem) {
 
         binding.taskName.text = task.name

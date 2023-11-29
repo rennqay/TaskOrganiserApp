@@ -1,6 +1,5 @@
 package com.example.taskorganiserapp
 
-import android.graphics.Paint
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import java.time.LocalDate
@@ -24,7 +23,7 @@ class TaskViewModel: ViewModel() {
         taskItems.postValue(taskList)
     }
 
-    fun updateTaskItem(id: UUID, newName: String, newNote: String?, newTime: LocalTime?, newDate: LocalDate?, newPriority: Int) {
+    fun updateTaskItem(id: UUID, newName: String, newNote: String?, newTime: LocalTime?, newDate: LocalDate?, newPriority: Int, newSubtasks: List<SubtaskItem>?) {
         val taskList = taskItems.value
         val task = taskList!!.find { it.id == id } !!
         task.name = newName
@@ -32,6 +31,7 @@ class TaskViewModel: ViewModel() {
         task.time = newTime
         task.date = newDate
         task.priority = newPriority
+        task.subtasks = newSubtasks
         taskItems.postValue(taskList)
     }
 

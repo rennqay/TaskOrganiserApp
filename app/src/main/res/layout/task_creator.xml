@@ -156,7 +156,6 @@
                 android:overScrollMode="never" />
         </LinearLayout>
 
-
     </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.button.MaterialButton
