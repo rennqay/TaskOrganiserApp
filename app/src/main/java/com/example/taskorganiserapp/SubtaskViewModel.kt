@@ -1,10 +1,15 @@
 package com.example.taskorganiserapp
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import java.util.UUID
 
-class SubtaskViewModel: ViewModel() {
+class SubtaskViewModel(): ViewModel() {
     var subtaskItems = MutableLiveData<MutableList<SubtaskItem>>()
 
     init {
@@ -14,41 +19,41 @@ class SubtaskViewModel: ViewModel() {
     fun addSubtaskItem(newSubtask: SubtaskItem) {
         val subtaskList = subtaskItems.value
         subtaskList!!.add(newSubtask)
-        subtaskItems.postValue(subtaskList)
+        subtaskItems.postValue(subtaskList!!)
     }
 
     fun deleteSubtaskItem(subtask: SubtaskItem) {
         val list = subtaskItems.value
         val buffer = list!!.find { it.id == subtask.id }!!
         list.remove(buffer)
-        subtaskItems.postValue(list)
+        subtaskItems.postValue(list!!)
     }
 
-    fun updateSubtaskItem(id: UUID, newName: String) {
+    fun updateSubtaskItem(id: Long, newName: String) {
         val subtaskList = subtaskItems.value
         val subtask = subtaskList!!.find { it.id == id }!!
         subtask.name = newName
-        subtaskItems.postValue(subtaskList)
+        subtaskItems.postValue(subtaskList!!)
     }
 
     fun setCompleted(subtask: SubtaskItem) {
         val list = subtaskItems.value
         val buffer = list!!.find { it.id == subtask.id }!!
         buffer.completed = true
-        subtaskItems.postValue(list)
+        subtaskItems.postValue(list!!)
     }
 
     fun setUncompleted(subtask: SubtaskItem) {
         val list = subtaskItems.value
         val buffer = list!!.find { it.id == subtask.id }!!
         buffer.completed = false
-        subtaskItems.postValue(list)
+        subtaskItems.postValue(list!!)
     }
 
-//    fun setCreatorMode(boolean: Boolean) {
-//        val list = subtaskItems.value
-//            for (subtaskItem in list!!) {
-//                subtaskItem.creatorMode = boolean
-//            }
-//    }
+    fun setTaskIDForEachSubtask(id: Long) {
+        val list = subtaskItems.value
+        for (subtaskItem in list!!) {
+            subtaskItem.taskID = id
+        }
+    }
 }

@@ -1,53 +1,47 @@
 package com.example.taskorganiserapp
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
-import java.util.UUID
 
-class TaskViewModel: ViewModel() {
-    var taskItems = MutableLiveData<MutableList<TaskItem>>()
+class TaskViewModel(private val repository: TasksRepository): ViewModel() {
+    var taskItems: LiveData<List<TaskItem>> = repository.allTasksItems.asLiveData()
+    var lastInsertedID: Long = 0
 
-    init {
-        taskItems.value = mutableListOf()
+    fun setTasksFromTaskList(taskList: TaskList) = viewModelScope.launch {
+        taskItems = repository.getTasksForList(taskList).asLiveData()
     }
 
-    fun setTaskList(taskList: TaskList) {
-        taskItems.postValue(taskList.tasks.toMutableList())
+    fun addTaskItem(newTaskItem: TaskItem) = viewModelScope.launch {
+        lastInsertedID = repository.insertTaskItem(newTaskItem)
     }
 
-    fun addTaskItem(newTask: TaskItem) {
-        val taskList = taskItems.value
-        taskList!!.add(newTask)
-        taskItems.postValue(taskList)
+    fun updateTaskItem(newTaskItem: TaskItem) = viewModelScope.launch {
+        repository.updateTaskItem(newTaskItem)
     }
 
-    fun updateTaskItem(id: UUID, newName: String, newNote: String?, newTime: LocalTime?, newDate: LocalDate?, newPriority: Int, newSubtasks: List<SubtaskItem>?) {
-        val taskList = taskItems.value
-        val task = taskList!!.find { it.id == id } !!
-        task.name = newName
-        task.note = newNote
-        task.time = newTime
-        task.date = newDate
-        task.priority = newPriority
-        task.subtasks = newSubtasks
-        taskItems.postValue(taskList)
+    fun deleteTaskItem(taskItem: TaskItem) = viewModelScope.launch {
+        repository.deleteTaskItem(taskItem)
     }
 
-    fun setCompleted(task: TaskItem)
+    fun isCompleted(taskItem: TaskItem, state: Boolean) = viewModelScope.launch {
+        taskItem.completed = state
+        repository.updateTaskItem(taskItem)
+    }
+}
+
+class TaskItemModelFactory(private val repository: TasksRepository): ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T
     {
-        val list = taskItems.value
-        val task = list!!.find { it.id == task.id }!!
-        task.completed = true
-        taskItems.postValue(list)
-    }
+        if (modelClass.isAssignableFrom(TaskViewModel::class.java))
+            return TaskViewModel(repository) as T
 
-    fun setUncompleted(task: TaskItem)
-    {
-        val list = taskItems.value
-        val task = list!!.find { it.id == task.id }!!
-        task.completed = false
-        taskItems.postValue(list)
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

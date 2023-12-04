@@ -1,19 +1,14 @@
 package com.example.taskorganiserapp
 
-import android.app.AlarmManager
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,27 +18,33 @@ import com.google.android.material.sidesheet.SideSheetBehavior
 import com.google.android.material.sidesheet.SideSheetCallback
 import com.google.android.material.sidesheet.SideSheetDialog
 import com.google.android.material.snackbar.Snackbar
-import java.util.Calendar
 
 class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickListener, SubtaskItemClickListener {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var subtaskViewModel: SubtaskViewModel
-    private lateinit var taskViewModel: TaskViewModel
-    private lateinit var taskListViewModel: TaskListViewModel
     private lateinit var sideSheetDialog: SideSheetDialog
     private lateinit var currentTaskList: TaskList
+    private lateinit var sharedPreferencesManager: SharedPreferencesManager
+
+    private val taskViewModel: TaskViewModel by viewModels {
+        TaskItemModelFactory((application as TaskOrganiserApp).repository)
+    }
+    private val taskListViewModel: TaskListViewModel by viewModels {
+        TaskListModelFactory((application as TaskOrganiserApp).repository)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
+        sharedPreferencesManager = SharedPreferencesManager(this)
+        sideSheetDialog = SideSheetDialog(this)
         setContentView(binding.root)
 
-        subtaskViewModel = ViewModelProvider(this)[SubtaskViewModel::class.java]
-        taskViewModel = ViewModelProvider(this)[TaskViewModel::class.java]
-        taskListViewModel = ViewModelProvider(this)[TaskListViewModel::class.java]
-        sideSheetDialog = SideSheetDialog(this)
-        currentTaskList = taskListViewModel.listOfTaskLists.value!![0]
+        if(sharedPreferencesManager.isFirstRun()) {
+            taskListViewModel.addTaskList(TaskList("Wszystkie", false))
+        }
+
+        currentTaskList = TaskList("Wszystkie", true)
 
         setSideSheet()
         setRecyclerView()
@@ -52,7 +53,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
         binding.topAppBar.title = currentTaskList.name
 
         binding.addTaskFAB.setOnClickListener {
-            TaskCreator(null).show(supportFragmentManager, "newTaskTag")
+            TaskCreator(null, currentTaskList.id, taskViewModel).show(supportFragmentManager, "newTaskTag")
         }
 
         binding.topAppBar.setNavigationOnClickListener {
@@ -80,14 +81,14 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
         binding.topAppBar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.deleteList -> {
-                    if(currentTaskList != taskListViewModel.listOfTaskLists.value!!.first()) {
+                    if(currentTaskList.isEditable) {
                         taskListViewModel.deleteTaskList(currentTaskList)
-                        taskViewModel.setTaskList(taskListViewModel.listOfTaskLists.value!!.first())
+                        taskViewModel.setTasksFromTaskList(taskListViewModel.listOfTaskLists.value!!.first())
                         currentTaskList = taskListViewModel.listOfTaskLists.value!!.first()
                         binding.topAppBar.title = taskListViewModel.listOfTaskLists.value!!.first().name
                     }
                     else
-                        Toast.makeText(this, "Cannot delete first list", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Cannot delete this list", Toast.LENGTH_SHORT).show()
                     true
                 }
                 R.id.search -> {
@@ -136,7 +137,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
             sideSheetDialog.dismiss()
         }
         sideSheetBinding.addTaskListButton.setOnClickListener{
-            val newTaskList = TaskList("Lista", mutableListOf(), true)
+            val newTaskList = TaskList("Lista", true)
             val alertDialog = AlertDialog.Builder(this)
             val inflater = layoutInflater
             val dialogLayout = inflater.inflate(R.layout.add_list_dialog, null)
@@ -171,42 +172,36 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
             ): Boolean {
                 return false
             }
+            @SuppressLint("NotifyDataSetChanged")
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val deletedTask: TaskItem = taskViewModel.taskItems.value!![viewHolder.adapterPosition]
-                val position = viewHolder.adapterPosition
-                val listOfDeleted = taskListViewModel.listOfTaskLists.value!![1].tasks.toMutableList()
 
-                if(currentTaskList.tasks != listOfDeleted) {
-                    listOfDeleted.add(deletedTask)
-                    taskListViewModel.listOfTaskLists.value!![1].tasks = listOfDeleted
-                }
-                taskViewModel.taskItems.value!!.removeAt(viewHolder.adapterPosition)
+                taskViewModel.deleteTaskItem(deletedTask)
                 binding.taskList.adapter?.notifyItemRemoved(viewHolder.adapterPosition)
 
                 Snackbar.make(binding.taskList, "Deleted task: " + deletedTask.name, Snackbar.LENGTH_LONG)
                     .setAction("UNDO") {
-                        taskViewModel.taskItems.value!!.add(position, deletedTask)
-                        binding.taskList.adapter?.notifyItemInserted(position)
+                        taskViewModel.addTaskItem(deletedTask)
+                        binding.taskList.adapter?.notifyDataSetChanged()
                     }.show()
             }
         }).attachToRecyclerView(binding.taskList)
     }
 
     override fun editTaskItem(task: TaskItem) {
-        TaskCreator(task).show(supportFragmentManager, "editTaskTag")
+        TaskCreator(task, currentTaskList.id, taskViewModel).show(supportFragmentManager, "editTaskTag")
     }
 
     override fun setCompleteTaskItem(task: TaskItem) {
-        taskViewModel.setCompleted(task)
+        taskViewModel.isCompleted(task, true)
     }
 
     override fun setIncompleteTaskItem(task: TaskItem) {
-        taskViewModel.setUncompleted(task)
+        taskViewModel.isCompleted(task, false)
     }
 
     override fun setTaskList(taskList: TaskList) {
-        currentTaskList.tasks = taskViewModel.taskItems.value!!
-        taskViewModel.setTaskList(taskList)
+        taskViewModel.setTasksFromTaskList(taskList)
         currentTaskList = taskList
         binding.topAppBar.title = taskList.name
         sideSheetDialog.dismiss()

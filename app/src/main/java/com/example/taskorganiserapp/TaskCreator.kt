@@ -17,10 +17,9 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.util.Date
 
-class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), SubtaskItemClickListener {
+class TaskCreator(private var task: TaskItem?, private val listID: Long, private val taskViewModel: TaskViewModel) : BottomSheetDialogFragment(), SubtaskItemClickListener {
 
     private lateinit var binding: TaskCreatorBinding
-    private lateinit var taskViewModel: TaskViewModel
     private lateinit var subtaskViewModel: SubtaskViewModel
     private lateinit var reminderService: ReminderService
     private var time: LocalTime? = null
@@ -30,7 +29,6 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
         super.onViewCreated(view, savedInstanceState)
         val activity = requireActivity()
 
-        taskViewModel = ViewModelProvider(activity)[TaskViewModel::class.java]
         subtaskViewModel = ViewModelProvider(activity)[SubtaskViewModel::class.java]
         reminderService = ReminderService(activity, binding)
         reminderService.createNotificationChannel()
@@ -69,7 +67,7 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
 
     private fun addSubtask() {
         val name = binding.subtaskName.text.toString()
-        subtaskViewModel.addSubtaskItem(SubtaskItem(name, completed = false))
+        subtaskViewModel.addSubtaskItem(SubtaskItem( name = name, completed = false))
     }
 
     @SuppressLint("SetTextI18n")
@@ -80,12 +78,12 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
             binding.note.setText(task!!.note)
 
             if(task!!.time != null) {
-                time = task!!.time!!
+                time = task!!.parseTime()
                 updateTimeButtonText()
             }
 
             if(task!!.date != null) {
-                date = task!!.date!!
+                date = task!!.parseDate()
                 updateDateButtonText()
             }
 
@@ -96,7 +94,7 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
             }
 
             if(!task!!.subtasks.isNullOrEmpty())
-                subtaskViewModel.subtaskItems.postValue(task!!.subtasks as MutableList<SubtaskItem>?)
+                subtaskViewModel.subtaskItems.value = task!!.subtasks!!.toMutableList()
         }
         else {
             binding.title.text = "Create Task"
@@ -161,12 +159,23 @@ class TaskCreator(private var task: TaskItem?) : BottomSheetDialogFragment(), Su
 
         if(task == null) {
             SubtaskItem.creatorMode = false
-            val newTask = TaskItem(name, note, time, date, priority,false, subtaskViewModel.subtaskItems.value?.toList())
-            taskViewModel.addTaskItem(newTask)
-        }
-        else
-            taskViewModel.updateTaskItem(task!!.id, name, note, time, date, priority, subtaskViewModel.subtaskItems.value?.toList())
+            val newTask = TaskItem(
+                listID = listID,
+                name = name,
+                note = note,
+                time = time.toString(),
+                date = date.toString(),
+                priority = priority,
+                completed = false)
 
+            taskViewModel.addTaskItem(newTask)
+            subtaskViewModel.setTaskIDForEachSubtask(taskViewModel.lastInsertedID)
+            newTask.subtasks = subtaskViewModel.subtaskItems.value?.toList()
+            taskViewModel.updateTaskItem(newTask)
+        }
+        else {
+            taskViewModel.updateTaskItem(TaskItem(task!!.id, task!!.listID, name, note, time.toString(), date.toString(), priority, false))
+        }
         SubtaskItem.creatorMode = false
         dismiss()
     }

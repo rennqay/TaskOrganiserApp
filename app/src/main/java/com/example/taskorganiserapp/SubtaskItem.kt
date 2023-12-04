@@ -1,11 +1,16 @@
 package com.example.taskorganiserapp
 
+import androidx.room.Entity
+import androidx.room.Fts4
+import androidx.room.PrimaryKey
 import java.util.UUID
 
+@Entity(tableName = "subtask_item_table")
 data class SubtaskItem(
+    @PrimaryKey(autoGenerate = true) var id: Long = 0,
+    var taskID: Long = 0,
     var name: String,
-    var completed: Boolean,
-    var id: UUID = UUID.randomUUID()
+    var completed: Boolean
 ) {
     companion object {
         var creatorMode: Boolean = true
