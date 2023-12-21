@@ -5,6 +5,8 @@ import androidx.room.Entity
 import androidx.room.Fts4
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverter
+import androidx.room.TypeConverters
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -16,19 +18,12 @@ data class TaskItem(
     var listID: Long,
     var name: String,
     var note: String?,
-    var time: String?,
-    var date: String?,
+    var time: LocalTime?,
+    var date: LocalDate?,
     var priority: Int,
     var completed: Boolean,
+    var subtasks: List<SubtaskItem>?
     ) {
-
-    @Ignore var subtasks: List<SubtaskItem>? = null
-
-    fun parseTime(): LocalTime? = if (time == null) null
-        else LocalTime.parse(time, DateTimeFormatter.ISO_LOCAL_TIME)
-
-    fun parseDate(): LocalDate? = if (date == null) null
-        else LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE)
 
     fun setStateImage(): Int = if(completed) R.drawable.checked_button else R.drawable.unchecked_button
 }

@@ -3,6 +3,7 @@ package com.example.taskorganiserapp
 import android.annotation.SuppressLint
 import android.app.TimePickerDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -78,12 +79,12 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
             binding.note.setText(task!!.note)
 
             if(task!!.time != null) {
-                time = task!!.parseTime()
+                time = task!!.time
                 updateTimeButtonText()
             }
 
             if(task!!.date != null) {
-                date = task!!.parseDate()
+                date = task!!.date
                 updateDateButtonText()
             }
 
@@ -120,7 +121,8 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
     }
 
     private fun updateDateButtonText() {
-        binding.datePickerButton.text = String.format("%02d/%02d/%04d", date!!.dayOfMonth, date!!.monthValue, date!!.year)
+        if(date != null)
+            binding.datePickerButton.text = String.format("%02d/%02d/%04d", date!!.dayOfMonth, date!!.monthValue, date!!.year)
     }
 
     private fun openTimePicker() {
@@ -138,7 +140,8 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
     }
 
     private fun updateTimeButtonText() {
-        binding.timePickerButton.text = String.format("%02d:%02d", time!!.hour, time!!.minute)
+        if(time != null)
+            binding.timePickerButton.text = String.format("%02d:%02d", time!!.hour, time!!.minute)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -163,18 +166,26 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
                 listID = listID,
                 name = name,
                 note = note,
-                time = time.toString(),
-                date = date.toString(),
+                time = time,
+                date = date,
                 priority = priority,
-                completed = false)
+                completed = false,
+                subtasks = subtaskViewModel.subtaskItems.value?.toList())
 
             taskViewModel.addTaskItem(newTask)
-            subtaskViewModel.setTaskIDForEachSubtask(taskViewModel.lastInsertedID)
-            newTask.subtasks = subtaskViewModel.subtaskItems.value?.toList()
-            taskViewModel.updateTaskItem(newTask)
+
+            Log.i("subtask", "task id=" + taskViewModel.lastInsertedID)
         }
         else {
-            taskViewModel.updateTaskItem(TaskItem(task!!.id, task!!.listID, name, note, time.toString(), date.toString(), priority, false))
+            task!!.name = name
+            task!!.note = note
+            task!!.time = time
+            task!!.date = date
+            task!!.priority = priority
+
+            task!!.subtasks = subtaskViewModel.subtaskItems.value?.toList()
+
+            taskViewModel.updateTaskItem(task!!)
         }
         SubtaskItem.creatorMode = false
         dismiss()
@@ -185,10 +196,10 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
     }
 
     override fun setCompleteSubtaskItem(subtask: SubtaskItem) {
-        subtaskViewModel.setCompleted(subtask)
+        subtaskViewModel.setState(subtask, true)
     }
 
     override fun setIncompleteSubtaskItem(subtask: SubtaskItem) {
-        subtaskViewModel.setUncompleted(subtask)
+        subtaskViewModel.setState(subtask, false)
     }
 }

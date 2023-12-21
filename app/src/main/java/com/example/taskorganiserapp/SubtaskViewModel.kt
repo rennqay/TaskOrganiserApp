@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.UUID
 
 class SubtaskViewModel(): ViewModel() {
@@ -36,24 +37,10 @@ class SubtaskViewModel(): ViewModel() {
         subtaskItems.postValue(subtaskList!!)
     }
 
-    fun setCompleted(subtask: SubtaskItem) {
+    fun setState(subtask: SubtaskItem, state: Boolean) {
         val list = subtaskItems.value
         val buffer = list!!.find { it.id == subtask.id }!!
-        buffer.completed = true
+        buffer.completed = state
         subtaskItems.postValue(list!!)
-    }
-
-    fun setUncompleted(subtask: SubtaskItem) {
-        val list = subtaskItems.value
-        val buffer = list!!.find { it.id == subtask.id }!!
-        buffer.completed = false
-        subtaskItems.postValue(list!!)
-    }
-
-    fun setTaskIDForEachSubtask(id: Long) {
-        val list = subtaskItems.value
-        for (subtaskItem in list!!) {
-            subtaskItem.taskID = id
-        }
     }
 }

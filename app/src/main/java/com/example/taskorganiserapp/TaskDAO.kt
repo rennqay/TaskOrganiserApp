@@ -10,25 +10,6 @@ import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface SubtaskItemDAO {
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSubtaskItem(subtaskItem: SubtaskItem): Long
-
-    @Update
-    suspend fun updateSubtaskItem(subtaskItem: SubtaskItem)
-
-    @Delete
-    suspend fun deleteSubtaskItem(subtaskItem: SubtaskItem)
-
-    @Query("SELECT * FROM subtask_item_table WHERE taskID = :taskID")
-    fun getSubtasksForTask(taskID: Long): Flow<List<SubtaskItem>>
-
-    @Query("SELECT * FROM subtask_item_table")
-    fun getAllSubtasks(): Flow<List<SubtaskItem>>
-}
-
-@Dao
 interface TaskItemDAO {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -45,6 +26,9 @@ interface TaskItemDAO {
 
     @Query("SELECT * FROM task_item_table")
     fun getAllTasks(): Flow<List<TaskItem>>
+
+    @Query("DELETE FROM task_item_table WHERE listID = :listID")
+    fun deleteTasksInList(listID: Long)
 }
 
 @Dao

@@ -25,14 +25,12 @@ class TaskItemViewHolder(
         binding.taskNote.text = task.note
 
         if(task.time != null)
-            binding.taskTime.text = task.time
-//            binding.taskTime.text = timeFormat.format(task.time)
+            binding.taskTime.text = timeFormat.format(task.time)
         else
             binding.taskTime.text = ""
 
         if(task.date != null)
-            binding.taskDate.text = task.date
-//            binding.taskDate.text = dateFormat.format(task.date)
+            binding.taskDate.text = dateFormat.format(task.date)
         else
             binding.taskDate.text = ""
 

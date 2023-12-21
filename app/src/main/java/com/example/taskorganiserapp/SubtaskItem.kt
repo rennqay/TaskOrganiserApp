@@ -8,10 +8,11 @@ import java.util.UUID
 @Entity(tableName = "subtask_item_table")
 data class SubtaskItem(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
-    var taskID: Long = 0,
     var name: String,
     var completed: Boolean
 ) {
+    constructor() : this(0, "", false)
+
     companion object {
         var creatorMode: Boolean = true
     }

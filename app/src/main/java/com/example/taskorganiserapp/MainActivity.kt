@@ -3,12 +3,14 @@ package com.example.taskorganiserapp
 import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,11 +25,11 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var sideSheetDialog: SideSheetDialog
+    private lateinit var sideSheetBinding: SideViewOfTasklistBinding
     private lateinit var currentTaskList: TaskList
     private lateinit var sharedPreferencesManager: SharedPreferencesManager
-
     private val taskViewModel: TaskViewModel by viewModels {
-        TaskItemModelFactory((application as TaskOrganiserApp).repository)
+        TaskViewModel.TaskModelFactory((application as TaskOrganiserApp).repository)
     }
     private val taskListViewModel: TaskListViewModel by viewModels {
         TaskListModelFactory((application as TaskOrganiserApp).repository)
@@ -41,10 +43,10 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
         setContentView(binding.root)
 
         if(sharedPreferencesManager.isFirstRun()) {
-            taskListViewModel.addTaskList(TaskList("Wszystkie", false))
+            taskListViewModel.addTaskList(TaskList(name = "Wszystkie", isEditable = false))
         }
 
-        currentTaskList = TaskList("Wszystkie", true)
+        currentTaskList = TaskList(name = "Wszystkie", isEditable = false)
 
         setSideSheet()
         setRecyclerView()
@@ -83,7 +85,8 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
                 R.id.deleteList -> {
                     if(currentTaskList.isEditable) {
                         taskListViewModel.deleteTaskList(currentTaskList)
-                        taskViewModel.setTasksFromTaskList(taskListViewModel.listOfTaskLists.value!!.first())
+                        sideSheetBinding.taskLists.adapter?.notifyItemRemoved(taskListViewModel.listOfTaskLists.value!!.indexOf(currentTaskList))
+                        taskViewModel.setAllTasks()
                         currentTaskList = taskListViewModel.listOfTaskLists.value!!.first()
                         binding.topAppBar.title = taskListViewModel.listOfTaskLists.value!!.first().name
                     }
@@ -106,7 +109,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
 
     private fun setRecyclerView() {
         val mainActivity = this
-        taskViewModel.taskItems.observe(this){
+        taskViewModel.taskItems.observe(this) {
             binding.taskList.apply {
                 layoutManager = LinearLayoutManager(applicationContext)
                 adapter = TaskItemAdapter(it, mainActivity, mainActivity)
@@ -125,7 +128,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
             override fun onSlide(sheet: View, slideOffset: Float) {
             }
         })
-        val sideSheetBinding = SideViewOfTasklistBinding.inflate(layoutInflater)
+        sideSheetBinding = SideViewOfTasklistBinding.inflate(layoutInflater)
         val mainActivity = this
 
         sideSheetDialog.isDismissWithSheetAnimationEnabled = true
@@ -137,7 +140,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
             sideSheetDialog.dismiss()
         }
         sideSheetBinding.addTaskListButton.setOnClickListener{
-            val newTaskList = TaskList("Lista", true)
+            val newTaskList = TaskList(name = "Lista", isEditable = true)
             val alertDialog = AlertDialog.Builder(this)
             val inflater = layoutInflater
             val dialogLayout = inflater.inflate(R.layout.add_list_dialog, null)
@@ -147,7 +150,13 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
                 setPositiveButton("OK") { _, _ ->
                     newTaskList.name = name.text.toString()
                     taskListViewModel.addTaskList(newTaskList)
-                    setTaskList(newTaskList)
+                    Log.i("TaskList", "lastInserted=" + taskListViewModel.lastInsertedID)
+                    newTaskList.id = taskListViewModel.lastInsertedID
+                    currentTaskList = newTaskList
+                    binding.topAppBar.title = currentTaskList.name
+                    taskViewModel.setTasksFromTaskList(currentTaskList)
+                    sideSheetDialog.dismiss()
+                    Log.i("TaskList", "Added TaskList id=" + newTaskList.id + " name=" + newTaskList.name)
                 }
                 setNegativeButton("Cancel") { _, _ -> }
                 setView(dialogLayout)
@@ -193,17 +202,22 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
     }
 
     override fun setCompleteTaskItem(task: TaskItem) {
-        taskViewModel.isCompleted(task, true)
+        taskViewModel.setState(task, true)
     }
 
     override fun setIncompleteTaskItem(task: TaskItem) {
-        taskViewModel.isCompleted(task, false)
+        taskViewModel.setState(task, false)
     }
 
     override fun setTaskList(taskList: TaskList) {
-        taskViewModel.setTasksFromTaskList(taskList)
         currentTaskList = taskList
         binding.topAppBar.title = taskList.name
+
+        if(currentTaskList.name == "Wszystkie")
+            taskViewModel.setAllTasks()
+        else
+            taskViewModel.setTasksFromTaskList(taskList)
+
         sideSheetDialog.dismiss()
     }
 
