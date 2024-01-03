@@ -35,10 +35,11 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
         TaskListModelFactory((application as TaskOrganiserApp).repository)
     }
 
+    @SuppressLint("CutPasteId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
-        sharedPreferencesManager = SharedPreferencesManager(this)
+        sharedPreferencesManager = SharedPreferencesManager(TaskOrganiserApp.appContext)
         sideSheetDialog = SideSheetDialog(this)
         setContentView(binding.root)
 
@@ -95,11 +96,30 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
                     true
                 }
                 R.id.search -> {
-                    // Handle search icon press
+                    val alertDialog = AlertDialog.Builder(this)
+                    val inflater = layoutInflater
+                    val dialogLayout = inflater.inflate(R.layout.add_list_dialog, null)
+                    val nameField = dialogLayout.findViewById<EditText>(R.id.newListName)
+                    with(alertDialog) {
+                        setTitle("Search task by name")
+                        setPositiveButton("OK") { _, _ ->
+                            val name = nameField.text.toString()
+                            taskViewModel.findTasksByName(name)
+                            sideSheetDialog.dismiss()
+                            Log.i("search", "Found by name: $name")
+                        }
+                        setNegativeButton("Cancel") { _, _ -> }
+                        setView(dialogLayout)
+                        show()
+                    }
                     true
                 }
                 R.id.settings -> {
-                    // Handle more item (inside overflow menu) press
+                    val settings = Settings(sharedPreferencesManager, taskViewModel, currentTaskList)
+                    supportFragmentManager.beginTransaction()
+                        .replace(android.R.id.content, settings)
+                        .addToBackStack(null)
+                        .commit()
                     true
                 }
                 else -> false

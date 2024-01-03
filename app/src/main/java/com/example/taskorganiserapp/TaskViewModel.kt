@@ -22,50 +22,43 @@ import java.time.LocalTime
 
 class TaskViewModel(private val repository: TasksRepository): ViewModel() {
     var taskItems: MediatorLiveData<List<TaskItem>> = MediatorLiveData<List<TaskItem>>()
-    private var allTaskItems: LiveData<List<TaskItem>> = repository.allTasksItems.asLiveData()
     private var selectedTaskItems: LiveData<List<TaskItem>>? = null
-    private var mainSourceAlreadyAdded = false
     var lastInsertedID: Long = 0
 
     init {
-        taskItems.addSource(allTaskItems) {
+        selectedTaskItems = repository.getAllTasks().asLiveData()
+        taskItems.addSource(selectedTaskItems!!) {
             taskItems.value = it
         }
-        mainSourceAlreadyAdded = true
     }
 
     fun setAllTasks() {
-        if(selectedTaskItems != null) {
+        if(selectedTaskItems != null)
             taskItems.removeSource(selectedTaskItems!!)
-        }
-        if(!mainSourceAlreadyAdded) {
-            mainSourceAlreadyAdded = true
-            taskItems.addSource(allTaskItems) {
-                taskItems.value = it
-            }
+
+        selectedTaskItems = repository.getAllTasks().asLiveData()
+        taskItems.addSource(selectedTaskItems!!) {
+            taskItems.value = it
         }
     }
 
     fun setTasksFromTaskList(taskList: TaskList) {
-        if(selectedTaskItems == null) {
-            selectedTaskItems = repository.getTasksForList(taskList).asLiveData()
-            mainSourceAlreadyAdded = false
-            taskItems.removeSource(allTaskItems)
-            taskItems.addSource(selectedTaskItems!!) {
-                taskItems.value = it
-            }
-        }
-        else {
-            if(mainSourceAlreadyAdded)
-                taskItems.removeSource(allTaskItems)
-            else
-                taskItems.removeSource(selectedTaskItems!!)
+        if(selectedTaskItems != null)
+            taskItems.removeSource(selectedTaskItems!!)
 
-            selectedTaskItems = repository.getTasksForList(taskList).asLiveData()
-            mainSourceAlreadyAdded = false
-            taskItems.addSource(selectedTaskItems!!) {
-                taskItems.value = it
-            }
+        selectedTaskItems = repository.getTasksForList(taskList).asLiveData()
+        taskItems.addSource(selectedTaskItems!!) {
+            taskItems.value = it
+        }
+    }
+
+    fun findTasksByName(name: String) {
+        if(selectedTaskItems != null)
+            taskItems.removeSource(selectedTaskItems!!)
+
+        selectedTaskItems = repository.getTasksByName(name).asLiveData()
+        taskItems.addSource(selectedTaskItems!!) {
+            taskItems.value = it
         }
     }
 

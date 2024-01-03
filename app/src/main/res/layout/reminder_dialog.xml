@@ -6,6 +6,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/blue0">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:layout_gravity="center"
+            android:text="Set reminder"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"/>
+
+    </LinearLayout>
+
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/reminderType"
         android:layout_width="match_parent"
@@ -39,6 +57,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="12dp"
+        android:layout_marginBottom="12dp"
         app:selectionRequired="true"
         app:singleSelection="true"
         app:checkedButton="@+id/onTime">
@@ -61,10 +80,12 @@
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <LinearLayout
+        android:id="@+id/pickers"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="12dp"
-        android:visibility="visible">
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginBottom="12dp"
+        android:visibility="gone">
 
         <NumberPicker
             android:id="@+id/numberPicker"
@@ -82,15 +103,31 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/reminderValue"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="12dp"
-        android:layout_marginBottom="12dp"
-        android:textAlignment="center"
-        android:text="Reminder set for"
-        android:textStyle="bold"
-        android:textSize="16sp"/>
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginHorizontal="12dp"
+            android:layout_gravity="center"
+            android:text="Reminder set for"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/reminderValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12dp"
+            android:layout_marginBottom="4dp"
+            android:layout_gravity="center"
+            android:text="TIME"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+    </LinearLayout>
 
 </LinearLayout>

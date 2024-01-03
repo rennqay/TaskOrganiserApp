@@ -5,9 +5,8 @@ import androidx.room.Fts4
 import androidx.room.PrimaryKey
 import java.util.UUID
 
-@Entity(tableName = "subtask_item_table")
 data class SubtaskItem(
-    @PrimaryKey(autoGenerate = true) var id: Long = 0,
+    var id: Int,
     var name: String,
     var completed: Boolean
 ) {
@@ -18,4 +17,3 @@ data class SubtaskItem(
     }
     fun setStateImage(): Int = if(completed) R.drawable.checked_button else R.drawable.unchecked_button
 }
-

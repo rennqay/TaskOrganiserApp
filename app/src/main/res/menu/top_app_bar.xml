@@ -3,6 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/sort"
+        android:icon="@drawable/sort_icon"
+        android:title="Sort"
+        android:contentDescription="Sort"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/deleteList"
         android:icon="@drawable/delete_icon"
         android:title="Delete list"

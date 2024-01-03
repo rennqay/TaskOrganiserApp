@@ -11,7 +11,7 @@ import kotlinx.coroutines.runBlocking
 import java.util.UUID
 
 class SubtaskViewModel(): ViewModel() {
-    var subtaskItems = MutableLiveData<MutableList<SubtaskItem>>()
+    var subtaskItems = MutableLiveData<MutableList<SubtaskItem>?>()
 
     init {
         subtaskItems.value = mutableListOf()
@@ -20,27 +20,27 @@ class SubtaskViewModel(): ViewModel() {
     fun addSubtaskItem(newSubtask: SubtaskItem) {
         val subtaskList = subtaskItems.value
         subtaskList!!.add(newSubtask)
-        subtaskItems.postValue(subtaskList!!)
+        subtaskItems.postValue(subtaskList)
     }
 
     fun deleteSubtaskItem(subtask: SubtaskItem) {
         val list = subtaskItems.value
         val buffer = list!!.find { it.id == subtask.id }!!
         list.remove(buffer)
-        subtaskItems.postValue(list!!)
+        subtaskItems.postValue(list)
     }
 
-    fun updateSubtaskItem(id: Long, newName: String) {
-        val subtaskList = subtaskItems.value
-        val subtask = subtaskList!!.find { it.id == id }!!
-        subtask.name = newName
-        subtaskItems.postValue(subtaskList!!)
-    }
+//    fun updateSubtaskItem(id: Int, newName: String) {
+//        val subtaskList = subtaskItems.value
+//        val subtask = subtaskList!!.find { it.id == id }!!
+//        subtask.name = newName
+//        subtaskItems.postValue(subtaskList)
+//    }
 
     fun setState(subtask: SubtaskItem, state: Boolean) {
         val list = subtaskItems.value
         val buffer = list!!.find { it.id == subtask.id }!!
         buffer.completed = state
-        subtaskItems.postValue(list!!)
+        subtaskItems.postValue(list)
     }
 }

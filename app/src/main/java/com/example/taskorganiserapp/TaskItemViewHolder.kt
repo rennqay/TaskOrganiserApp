@@ -16,6 +16,7 @@ class TaskItemViewHolder(
     private val subtaskItemClickListener: SubtaskItemClickListener
 ): RecyclerView.ViewHolder(binding.root)
 {
+
     private val timeFormat = DateTimeFormatter.ofPattern("HH:mm")
     private val dateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 

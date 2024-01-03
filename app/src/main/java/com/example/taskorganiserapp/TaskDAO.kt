@@ -21,8 +21,29 @@ interface TaskItemDAO {
     @Delete
     suspend fun deleteTaskItem(taskItem: TaskItem)
 
+    @Query("SELECT * FROM task_item_table WHERE listID = :listID ORDER BY date, time")
+    fun getTasksForListByDateTime(listID: Long): Flow<List<TaskItem>>
+
+    @Query("SELECT * FROM task_item_table WHERE listID = :listID ORDER BY name")
+    fun getTasksForListByAlphabeticalOrder(listID: Long): Flow<List<TaskItem>>
+
+    @Query("SELECT * FROM task_item_table WHERE listID = :listID ORDER BY priority")
+    fun getTasksForListByPriority(listID: Long): Flow<List<TaskItem>>
+
     @Query("SELECT * FROM task_item_table WHERE listID = :listID")
     fun getTasksForList(listID: Long): Flow<List<TaskItem>>
+
+    @Query("SELECT * FROM task_item_table WHERE name LIKE '%' || :name || '%'")
+    fun getTasksByName(name: String): Flow<List<TaskItem>>
+
+    @Query("SELECT * FROM task_item_table ORDER BY date, time")
+    fun getAllTasksByDateTime(): Flow<List<TaskItem>>
+
+    @Query("SELECT * FROM task_item_table ORDER BY name")
+    fun getAllTasksByAlphabeticalOrder(): Flow<List<TaskItem>>
+
+    @Query("SELECT * FROM task_item_table ORDER BY priority")
+    fun getAllTasksByPriority(): Flow<List<TaskItem>>
 
     @Query("SELECT * FROM task_item_table")
     fun getAllTasks(): Flow<List<TaskItem>>

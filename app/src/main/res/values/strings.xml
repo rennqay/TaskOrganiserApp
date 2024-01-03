@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">TaskOrganiserApp</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
 
     <string-array name="timeUnits">
         <item>minutes</item>
@@ -10,6 +8,13 @@
         <item>weeks</item>
         <item>months</item>
         <item>years</item>
+    </string-array>
+
+    <string-array name="sortTypes">
+        <item>Added Order</item>
+        <item>Deadline</item>
+        <item>Alphabetic</item>
+        <item>Priority</item>
     </string-array>
 
 </resources>
