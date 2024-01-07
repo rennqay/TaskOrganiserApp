@@ -18,7 +18,9 @@ class TaskListsAdapter(
 
     ): RecyclerView.ViewHolder(binding.root) {
         fun bindTaskListItem(taskList: TaskList) {
-            binding.taskListName.text = taskList.name
+            val totalTasks = taskList.quantityOfToDoTasks + taskList.quantityOfCompletedTasks
+            val name = taskList.name + "   (${taskList.quantityOfCompletedTasks}✔/${totalTasks})"
+            binding.taskListName.text = name
             binding.root.setOnClickListener{
                 clickListener.setTaskList(taskList)
             }

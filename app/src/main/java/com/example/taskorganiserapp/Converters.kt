@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -34,6 +35,19 @@ class Converters {
     @TypeConverter
     fun fromLocalDateToString(date: LocalDate?): String {
         return date?.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) ?: ""
+    }
+
+    @TypeConverter
+    fun fromStringToLocalDateTime(value: String?): LocalDateTime? {
+        return if(value == "")
+            null
+        else
+            LocalDateTime.parse(value, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+    }
+
+    @TypeConverter
+    fun fromLocalDateTimeToString(dateTime: LocalDateTime?): String {
+        return dateTime?.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) ?: ""
     }
 
     @TypeConverter

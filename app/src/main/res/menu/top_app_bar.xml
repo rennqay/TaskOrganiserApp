@@ -3,20 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/sort"
-        android:icon="@drawable/sort_icon"
-        android:title="Sort"
-        android:contentDescription="Sort"
-        app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/deleteList"
-        android:icon="@drawable/delete_icon"
-        android:title="Delete list"
-        android:contentDescription="Delete list"
-        app:showAsAction="ifRoom" />
-
-    <item
         android:id="@+id/search"
         android:icon="@drawable/search_icon"
         android:iconTint="@color/white"
@@ -25,9 +11,27 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/share"
+        android:icon="@drawable/share_icon"
+        android:iconTint="@color/white"
+        android:title="Search"
+        android:contentDescription="Share"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/deleteList"
+        android:icon="@drawable/delete_icon"
+        android:iconTint="@color/white"
+        android:title="Delete list"
+        android:contentDescription="Delete list"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/settings"
+        android:icon="@drawable/settings_icon"
+        android:iconTint="@color/white"
         android:title="Settings"
         android:contentDescription="Settings"
-        app:showAsAction="never" />
+        app:showAsAction="ifRoom" />
 
 </menu>

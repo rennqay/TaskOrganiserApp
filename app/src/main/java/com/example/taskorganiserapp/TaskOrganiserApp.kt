@@ -7,7 +7,6 @@ class TaskOrganiserApp: Application() {
     companion object {
         lateinit var appContext: Context
     }
-
     private val database by lazy { AppDatabase.getDatabase(this) }
     private val preferences by lazy { SharedPreferencesManager(appContext) }
     val repository by lazy { TasksRepository(database.taskListDAO(), database.taskItemDAO(), preferences) }

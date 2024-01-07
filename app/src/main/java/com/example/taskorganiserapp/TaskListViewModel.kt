@@ -14,32 +14,6 @@ class TaskListViewModel(private val repository: TasksRepository): ViewModel() {
     var listOfTaskLists: LiveData<List<TaskList>> = repository.allTaskLists.asLiveData()
     var lastInsertedID: Long = 0
 
-    init {
-//        listOfTaskLists.value = mutableListOf()
-//        listOfTaskLists.value!!.add(TaskList("Wszystkie", mutableListOf(), false))
-//        listOfTaskLists.value!!.add(TaskList("Usunięte", mutableListOf(), false))
-//        listOfTaskLists.value!!.add(TaskList("Ukończone", mutableListOf(), false))
-    }
-
-//    fun addTaskList(newTaskList: TaskList) {
-//        val buffer = listOfTaskLists.value
-//        buffer!!.add(newTaskList)
-//        listOfTaskLists.postValue(buffer)
-//    }
-//
-//    fun deleteTaskList(taskList: TaskList) {
-//        val buffer = listOfTaskLists.value
-//        buffer!!.remove(taskList)
-//        listOfTaskLists.postValue(buffer)
-//    }
-//
-//    fun updateTaskList(taskList: TaskList) {
-//        val buffer = listOfTaskLists.value
-//        val editedTaskList = buffer!!.find { it.id == taskList.id } !!
-//        editedTaskList.name = taskList.name
-//        listOfTaskLists.postValue(buffer)
-//    }
-
     fun addTaskList(newTaskList: TaskList) {
         runBlocking { lastInsertedID = repository.insertTaskList(newTaskList) }
     }

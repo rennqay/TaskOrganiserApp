@@ -47,7 +47,7 @@ class ReminderService(private val context: Context, private val binding: TaskCre
         notificationManager?.createNotificationChannel(channel)
     }
 
-    fun reminderCreator(selectedDate: LocalDate, selectedTime: LocalTime) {
+    fun reminderCreator(selectedDate: LocalDate, selectedTime: LocalTime): LocalDateTime? {
         val reminderDialog = AlertDialog.Builder(context)
         val timeUnits = context.resources.getStringArray(R.array.timeUnits)
 
@@ -90,7 +90,7 @@ class ReminderService(private val context: Context, private val binding: TaskCre
 
         with(reminderDialog) {
             setPositiveButton("OK") { _, _ ->
-                if(!reminderOnTime) {
+                if (!reminderOnTime) {
                     when (unitsPicker.value) {
                         0 -> time = time!!.minusMinutes(numberPicker.value.toLong())
                         1 -> time = time!!.minusHours(numberPicker.value.toLong())
@@ -108,6 +108,7 @@ class ReminderService(private val context: Context, private val binding: TaskCre
             setView(reminderDialogBinding.root)
             show()
         }
+        return LocalDateTime.of(date, time)
     }
 
     private fun updateDisplayedDateTime() {

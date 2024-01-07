@@ -1,7 +1,6 @@
 package com.example.taskorganiserapp
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.os.Bundle
@@ -12,7 +11,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import androidx.core.view.marginLeft
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.taskorganiserapp.databinding.TaskCreatorBinding
@@ -20,6 +18,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.datepicker.MaterialDatePicker
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.util.Date
@@ -31,6 +30,7 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
     private lateinit var reminderService: ReminderService
     private var time: LocalTime? = null
     private var date: LocalDate? = null
+    private var reminderTime: LocalDateTime? = null
     private var subtaskCounter = 0
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -111,6 +111,11 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        SubtaskItem.creatorMode = false
+    }
+
     private fun addSubtask() {
         val name = binding.subtaskName.text.toString()
         subtaskViewModel.addSubtaskItem(SubtaskItem(id = subtaskCounter, name = name, completed = false))
@@ -152,8 +157,18 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
                 3 -> binding.veryHigh.isChecked = true
             }
 
-            if(!task!!.subtasks.isNullOrEmpty())
+            if(!task!!.subtasks.isNullOrEmpty()) {
                 subtaskViewModel.subtaskItems.value = task!!.subtasks!!.toMutableList()
+                subtaskCounter = task!!.subtasks!!.size
+                binding.scrollView.visibility = View.VISIBLE
+
+                when(subtaskCounter) {
+                    0 -> binding.scrollView.visibility = View.GONE
+                    1 -> binding.scrollView.layoutParams.height = 100
+                    2 -> binding.scrollView.layoutParams.height = 200
+                    else -> binding.scrollView.layoutParams.height = 300
+                }
+            }
         }
         else {
             binding.title.text = "Create Task"
@@ -212,7 +227,7 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
 
     private fun openReminderDialog() {
         if(date != null) {
-            if (time == null)
+            reminderTime = if (time == null)
                 reminderService.reminderCreator(date!!, LocalTime.of(0, 0))
             else
                 reminderService.reminderCreator(date!!, time!!)
@@ -243,11 +258,13 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
                     note = note,
                     time = time,
                     date = date,
+                    reminderTime = reminderTime,
+                    completionTime = null,
                     priority = priority,
-                    completed = false,
+                    isCompleted = false,
+                    isDelayed = false,
                     subtasks = subtaskViewModel.subtaskItems.value?.toList()
                 )
-
                 taskViewModel.addTaskItem(newTask)
 
                 Log.i("subtask", "task id=" + taskViewModel.lastInsertedID)

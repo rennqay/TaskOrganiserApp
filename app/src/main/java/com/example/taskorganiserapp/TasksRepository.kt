@@ -8,7 +8,6 @@ import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
 class TasksRepository(private val taskLists: TaskListDAO, private val tasks: TaskItemDAO, private val preferences: SharedPreferencesManager) {
-    //val allTasksItems: Flow<List<TaskItem>> = tasks.getAllTasks()
     val allTaskLists: Flow<List<TaskList>> = taskLists.getTaskLists()
 
     suspend fun insertTaskItem(task: TaskItem): Long {
@@ -23,27 +22,23 @@ class TasksRepository(private val taskLists: TaskListDAO, private val tasks: Tas
         tasks.deleteTaskItem(task)
     }
 
-    fun getAllTasks(): Flow<List<TaskItem>> {
-        return when (preferences.getSortType()) {
-            0 -> tasks.getAllTasks()
-            1 -> tasks.getAllTasksByDateTime()
-            2 -> tasks.getAllTasksByAlphabeticalOrder()
-            3 -> tasks.getAllTasksByPriority()
-            else -> {
-                tasks.getAllTasks()
+    fun getTasksForList(taskList: TaskList): Flow<List<TaskItem>> {
+        if(taskList.name == "Wszystkie") {
+            return when (preferences.getSortType()) {
+                0 -> tasks.getAllTasks()
+                1 -> tasks.getAllTasksByDateTime()
+                2 -> tasks.getAllTasksByAlphabeticalOrder()
+                3 -> tasks.getAllTasksByPriority()
+                else -> tasks.getAllTasks()
             }
         }
-    }
-
-    fun getTasksForList(taskList: TaskList): Flow<List<TaskItem>> {
-        Log.i("SortingLists", "Which number sort?: " + preferences.getSortType())
-        return when (preferences.getSortType()) {
-            0 -> tasks.getTasksForList(taskList.id)
-            1 -> tasks.getTasksForListByDateTime(taskList.id)
-            2 -> tasks.getTasksForListByAlphabeticalOrder(taskList.id)
-            3 -> tasks.getTasksForListByPriority(taskList.id)
-            else -> {
-                tasks.getTasksForList(taskList.id)
+        else {
+            return when (preferences.getSortType()) {
+                0 -> tasks.getTasksForList(taskList.id)
+                1 -> tasks.getTasksForListByDateTime(taskList.id)
+                2 -> tasks.getTasksForListByAlphabeticalOrder(taskList.id)
+                3 -> tasks.getTasksForListByPriority(taskList.id)
+                else -> tasks.getTasksForList(taskList.id)
             }
         }
     }

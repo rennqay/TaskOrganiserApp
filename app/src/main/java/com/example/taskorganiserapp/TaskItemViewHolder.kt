@@ -25,33 +25,43 @@ class TaskItemViewHolder(
         binding.taskName.text = task.name
         binding.taskNote.text = task.note
 
-        if(task.time != null)
-            binding.taskTime.text = timeFormat.format(task.time)
-        else
-            binding.taskTime.text = ""
-
-        if(task.date != null)
-            binding.taskDate.text = dateFormat.format(task.date)
-        else
-            binding.taskDate.text = ""
-
         when(task.priority) {
-            1 -> binding.priority.visibility = View.GONE
-            2 -> binding.priority.setColorFilter(Color.YELLOW)
-            3 -> binding.priority.setColorFilter(Color.RED)
+            1 -> binding.priorityIcon.visibility = View.GONE
+            2 -> binding.priorityIcon.setColorFilter(Color.YELLOW)
+            3 -> binding.priorityIcon.setColorFilter(Color.RED)
         }
 
-        if(task.completed) {
+        if(task.isCompleted) {
+            val completionTimeText = "Completed on: ${task.convertCompletionTimeToString()}"
+            binding.taskContainter.alpha = 0.5F
             binding.taskName.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
             binding.taskNote.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
-            binding.taskTime.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
-            binding.taskDate.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
+            binding.taskDate.text = completionTimeText
+            binding.taskTime.visibility = View.GONE
         }
         else {
+            binding.taskContainter.alpha = 1F
             binding.taskName.paintFlags = binding.taskName.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
             binding.taskNote.paintFlags = binding.taskNote.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-            binding.taskTime.paintFlags = binding.taskTime.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-            binding.taskDate.paintFlags = binding.taskDate.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+
+            if(task.time != null) {
+                binding.taskTime.visibility = View.VISIBLE
+                binding.taskTime.text = timeFormat.format(task.time)
+            }
+            else
+                binding.taskTime.visibility = View.GONE
+
+            if(task.date != null) {
+                binding.taskDate.visibility = View.VISIBLE
+                binding.taskDate.text = dateFormat.format(task.date)
+            }
+            else
+                binding.taskDate.visibility = View.GONE
+
+            if(task.reminderTime != null)
+                binding.reminderIcon.visibility = View.VISIBLE
+            else
+                binding.reminderIcon.visibility = View.GONE
         }
 
         if(!task.subtasks.isNullOrEmpty())
@@ -63,7 +73,7 @@ class TaskItemViewHolder(
         binding.taskCheckBox.setImageResource(task.setStateImage())
 
         binding.taskCheckBox.setOnClickListener {
-            if (!task.completed)
+            if (!task.isCompleted)
                 clickListener.setCompleteTaskItem(task)
             else
                 clickListener.setIncompleteTaskItem(task)

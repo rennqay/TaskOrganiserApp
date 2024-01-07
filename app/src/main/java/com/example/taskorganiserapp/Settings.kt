@@ -34,10 +34,7 @@ class Settings(private val preferences: SharedPreferencesManager, private val vi
         binding.spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 preferences.setSortType(position)
-                if(taskList.name == "Wszystkie")
-                    viewModel.setAllTasks()
-                else
-                    viewModel.setTasksFromTaskList(taskList)
+                viewModel.setTasksFromTaskList(taskList, 0)
                 Log.i("sortType", position.toString())
             }
 

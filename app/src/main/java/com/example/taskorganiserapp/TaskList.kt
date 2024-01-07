@@ -12,6 +12,8 @@ import java.util.UUID
 
 data class TaskList (
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
+    var quantityOfToDoTasks: Int,
+    var quantityOfCompletedTasks: Int,
     var name: String,
     var isEditable: Boolean,
 ) {}
