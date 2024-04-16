@@ -1,10 +1,12 @@
-package com.example.taskorganiserapp
+package com.example.taskorganiserapp.ViewModel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.taskorganiserapp.Model.Entities.TaskList
+import com.example.taskorganiserapp.Model.Database.TasksRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -12,10 +14,10 @@ import kotlinx.coroutines.runBlocking
 
 class TaskListViewModel(private val repository: TasksRepository): ViewModel() {
     var listOfTaskLists: LiveData<List<TaskList>> = repository.allTaskLists.asLiveData()
-    var lastInsertedID: Long = 0
+    var firstTaskList: LiveData<TaskList> = repository.getFirstTaskList().asLiveData()
 
-    fun addTaskList(newTaskList: TaskList) {
-        runBlocking { lastInsertedID = repository.insertTaskList(newTaskList) }
+    fun addTaskList(newTaskList: TaskList) = viewModelScope.launch {
+        repository.insertTaskList(newTaskList)
     }
 
     fun updateTaskList(newTaskList: TaskList) = viewModelScope.launch {

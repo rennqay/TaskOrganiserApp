@@ -1,9 +1,10 @@
-package com.example.taskorganiserapp
+package com.example.taskorganiserapp.ViewModel.Adapters
 
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.taskorganiserapp.Model.Entities.TaskList
 import com.example.taskorganiserapp.databinding.TaskListItemBinding
 
 class TaskListsAdapter(
@@ -27,6 +28,10 @@ class TaskListsAdapter(
         }
     }
 
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.bindTaskListItem(listOfTaskLists[position])
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val binding = TaskListItemBinding.inflate(inflater, parent, false)
@@ -34,10 +39,6 @@ class TaskListsAdapter(
     }
 
     override fun getItemCount(): Int = listOfTaskLists.size
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bindTaskListItem(listOfTaskLists[position])
-    }
 }
 
 interface TaskListClickListener {

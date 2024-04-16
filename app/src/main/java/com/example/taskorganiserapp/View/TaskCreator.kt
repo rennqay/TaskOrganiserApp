@@ -1,4 +1,4 @@
-package com.example.taskorganiserapp
+package com.example.taskorganiserapp.View
 
 import android.annotation.SuppressLint
 import android.app.TimePickerDialog
@@ -13,25 +13,39 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.taskorganiserapp.Model.Services.ReminderService
+import com.example.taskorganiserapp.Model.Entities.SubtaskItem
+import com.example.taskorganiserapp.Model.Entities.TaskItem
+import com.example.taskorganiserapp.ViewModel.Adapters.SubtaskItemAdapter
+import com.example.taskorganiserapp.ViewModel.Adapters.SubtaskItemClickListener
+import com.example.taskorganiserapp.ViewModel.SubtaskViewModel
+import com.example.taskorganiserapp.ViewModel.TaskViewModel
 import com.example.taskorganiserapp.databinding.TaskCreatorBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.datepicker.MaterialDatePicker
+import ulid.ULID
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 
-class TaskCreator(private var task: TaskItem?, private val listID: Long, private val taskViewModel: TaskViewModel) : BottomSheetDialogFragment(), SubtaskItemClickListener {
+class TaskCreator(private var task: TaskItem?, private val listID: ULID, private val taskViewModel: TaskViewModel) : BottomSheetDialogFragment(),
+    SubtaskItemClickListener {
 
     private lateinit var binding: TaskCreatorBinding
     private lateinit var subtaskViewModel: SubtaskViewModel
     private lateinit var reminderService: ReminderService
+    private lateinit var repeatabilityDialog: RepeatabilityDialog
     private var time: LocalTime? = null
     private var date: LocalDate? = null
     private var reminderTime: LocalDateTime? = null
     private var subtaskCounter = 0
+    private var timeInterval = 0
+    private var repeatValue = 0
+    lateinit var taskID: ULID
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = TaskCreatorBinding.inflate(inflater,container,false)
@@ -65,6 +79,8 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
         subtaskViewModel = ViewModelProvider(activity)[SubtaskViewModel::class.java]
         reminderService = ReminderService(activity, binding)
         reminderService.createNotificationChannel()
+        repeatabilityDialog = RepeatabilityDialog(activity)
+
         prepareCreator()
 
         subtaskViewModel.subtaskItems.observe(this) {
@@ -91,6 +107,9 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
         }
         binding.setReminderButton.setOnClickListener {
             openReminderDialog()
+        }
+        binding.setRepeatabilityButton.setOnClickListener {
+            openRepeatabilityDialog()
         }
         binding.deleteDate.setOnClickListener {
             date = null
@@ -137,7 +156,9 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
     @SuppressLint("SetTextI18n")
     private fun prepareCreator() {
         if(task != null) {
-            binding.title.text = "Edit Task"
+            taskID = task!!.id
+
+            binding.title.text = "Edytuj zadanie"
             binding.name.setText(task!!.name)
             binding.note.setText(task!!.note)
 
@@ -150,6 +171,12 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
                 date = task!!.date
                 updateDateButtonText()
             }
+
+            if(task!!.reminderTime != null)
+                if(task!!.reminderTime!! < LocalDateTime.now())
+                    task!!.reminderTime = null
+                else
+                    binding.setReminderButton.text = task!!.reminderTime!!.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
 
             when(task!!.priority) {
                 1 -> binding.normal.isChecked = true
@@ -171,7 +198,8 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
             }
         }
         else {
-            binding.title.text = "Create Task"
+            taskID = TaskItem.getULID()
+            binding.title.text = "Kreator zadań"
             subtaskViewModel.subtaskItems.value?.clear()
         }
         SubtaskItem.creatorMode = true
@@ -227,10 +255,22 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
 
     private fun openReminderDialog() {
         if(date != null) {
-            reminderTime = if (time == null)
-                reminderService.reminderCreator(date!!, LocalTime.of(0, 0))
+            if (time == null)
+                reminderTime = reminderService.reminderCreator(date!!, LocalTime.of(0, 0), taskID)
             else
-                reminderService.reminderCreator(date!!, time!!)
+                reminderTime = reminderService.reminderCreator(date!!, time!!, taskID)
+        }
+        else
+            Toast.makeText(context, "Deadline is not set!", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun openRepeatabilityDialog() {
+        val repeatParams: List<Int>
+
+        if(date != null) {
+            repeatParams = repeatabilityDialog.repeatabilityCreator()
+            timeInterval = repeatParams[0]
+            repeatValue = repeatParams[1]
         }
         else
             Toast.makeText(context, "Deadline is not set!", Toast.LENGTH_SHORT).show()
@@ -238,12 +278,16 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
 
     private fun saveTask()
     {
-        if(binding.name.text.isNullOrEmpty())
+        if(binding.name.text.isNullOrEmpty()) {
+            binding.nameLayout.isErrorEnabled = true
             binding.nameLayout.error = "Name is required!"
+        }
         else {
             val name = binding.name.text.toString()
             val note = binding.note.text.toString()
             var priority = 1 // default setting
+
+            Log.i("reminderTime", "Reminder Time: $reminderTime")
 
             if (binding.high.isChecked)
                 priority = 2
@@ -251,8 +295,8 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
                 priority = 3
 
             if (task == null) {
-                SubtaskItem.creatorMode = false
                 val newTask = TaskItem(
+                    id = taskID,
                     listID = listID,
                     name = name,
                     note = note,
@@ -262,18 +306,17 @@ class TaskCreator(private var task: TaskItem?, private val listID: Long, private
                     completionTime = null,
                     priority = priority,
                     isCompleted = false,
-                    isDelayed = false,
                     subtasks = subtaskViewModel.subtaskItems.value?.toList()
                 )
                 taskViewModel.addTaskItem(newTask)
 
-                Log.i("subtask", "task id=" + taskViewModel.lastInsertedID)
             } else {
                 task!!.name = name
                 task!!.note = note
                 task!!.time = time
                 task!!.date = date
                 task!!.priority = priority
+                task!!.reminderTime = reminderTime
 
                 task!!.subtasks = subtaskViewModel.subtaskItems.value?.toList()
 

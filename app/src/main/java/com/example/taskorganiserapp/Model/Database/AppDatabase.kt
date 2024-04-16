@@ -1,10 +1,12 @@
-package com.example.taskorganiserapp
+package com.example.taskorganiserapp.Model.Database
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.example.taskorganiserapp.Model.Entities.TaskItem
+import com.example.taskorganiserapp.Model.Entities.TaskList
 
 @Database(entities = [TaskItem::class, TaskList::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)

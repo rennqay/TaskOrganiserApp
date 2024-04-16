@@ -1,4 +1,4 @@
-package com.example.taskorganiserapp
+package com.example.taskorganiserapp.ViewModel.Adapters
 
 import android.content.Context
 import android.graphics.Color
@@ -6,6 +6,7 @@ import android.graphics.Paint
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.taskorganiserapp.Model.Entities.TaskItem
 import com.example.taskorganiserapp.databinding.TaskItemBinding
 import java.time.format.DateTimeFormatter
 
@@ -32,7 +33,7 @@ class TaskItemViewHolder(
         }
 
         if(task.isCompleted) {
-            val completionTimeText = "Completed on: ${task.convertCompletionTimeToString()}"
+            val completionTimeText = "Completed on: ${task.getCompletionTimeInString()}"
             binding.taskContainter.alpha = 0.5F
             binding.taskName.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
             binding.taskNote.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG

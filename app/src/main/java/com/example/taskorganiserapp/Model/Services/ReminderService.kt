@@ -1,4 +1,4 @@
-package com.example.taskorganiserapp
+package com.example.taskorganiserapp.Model.Services
 
 import android.app.AlarmManager
 import android.app.NotificationChannel
@@ -9,14 +9,14 @@ import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.Button
-import android.widget.LinearLayout
+import android.view.ViewGroup
 import android.widget.NumberPicker
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import com.example.taskorganiserapp.R
 import com.example.taskorganiserapp.databinding.ReminderDialogBinding
 import com.example.taskorganiserapp.databinding.TaskCreatorBinding
+import ulid.ULID
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -32,10 +32,11 @@ class ReminderService(private val context: Context, private val binding: TaskCre
     private val reminderDialogBinding = ReminderDialogBinding.inflate(LayoutInflater.from(context))
     private var isAlarm: Boolean = false
     private var reminderOnTime: Boolean = true
-    private var date: LocalDate? = null
-    private var time: LocalTime? = null
     private var dateBuffer: LocalDate? = null
     private var timeBuffer: LocalTime? = null
+    var date: LocalDate? = null
+    var time: LocalTime? = null
+    var taskID: ULID? = null
     
     fun createNotificationChannel() {
         val name = "Notification Channel"
@@ -47,9 +48,10 @@ class ReminderService(private val context: Context, private val binding: TaskCre
         notificationManager?.createNotificationChannel(channel)
     }
 
-    fun reminderCreator(selectedDate: LocalDate, selectedTime: LocalTime): LocalDateTime? {
+    fun reminderCreator(selectedDate: LocalDate, selectedTime: LocalTime, id: ULID): LocalDateTime? {
         val reminderDialog = AlertDialog.Builder(context)
         val timeUnits = context.resources.getStringArray(R.array.timeUnits)
+        taskID = id
 
         reminderDialogBinding.reminderValue.text = LocalDateTime.of(selectedDate, selectedTime).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
         numberPicker = reminderDialogBinding.numberPicker
@@ -88,26 +90,28 @@ class ReminderService(private val context: Context, private val binding: TaskCre
             updateDisplayedDateTime()
         }
 
-        with(reminderDialog) {
-            setPositiveButton("OK") { _, _ ->
-                if (!reminderOnTime) {
-                    when (unitsPicker.value) {
-                        0 -> time = time!!.minusMinutes(numberPicker.value.toLong())
-                        1 -> time = time!!.minusHours(numberPicker.value.toLong())
-                        2 -> date = date!!.minusDays(numberPicker.value.toLong())
-                        3 -> date = date!!.minusWeeks(numberPicker.value.toLong())
-                        4 -> date = date!!.minusMonths(numberPicker.value.toLong())
-                        5 -> date = date!!.minusYears(numberPicker.value.toLong())
-                    }
+        val parent = reminderDialogBinding.root.parent as? ViewGroup
+        parent?.removeView(reminderDialogBinding.root)
+
+        reminderDialog.setPositiveButton("OK") { _, _ ->
+            if (!reminderOnTime) {
+                when (unitsPicker.value) {
+                    0 -> time = time!!.minusMinutes(numberPicker.value.toLong())
+                    1 -> time = time!!.minusHours(numberPicker.value.toLong())
+                    2 -> date = date!!.minusDays(numberPicker.value.toLong())
+                    3 -> date = date!!.minusWeeks(numberPicker.value.toLong())
+                    4 -> date = date!!.minusMonths(numberPicker.value.toLong())
+                    5 -> date = date!!.minusYears(numberPicker.value.toLong())
                 }
-                binding.deleteReminder.visibility = View.VISIBLE
-                binding.leftMarginOfReminder.visibility = View.VISIBLE
-                setReminder()
             }
-            setNegativeButton("Cancel") { _, _ -> }
-            setView(reminderDialogBinding.root)
-            show()
+            binding.deleteReminder.visibility = View.VISIBLE
+            binding.leftMarginOfReminder.visibility = View.VISIBLE
+            setReminder()
         }
+        reminderDialog.setNegativeButton("Cancel") { _, _ -> }
+        reminderDialog.setView(reminderDialogBinding.root)
+        reminderDialog.show()
+
         return LocalDateTime.of(date, time)
     }
 
@@ -127,9 +131,10 @@ class ReminderService(private val context: Context, private val binding: TaskCre
 
     private fun setReminder() {
         val intent = Intent(context.applicationContext, AlarmReceiver::class.java)
-        intent.putExtra(titleExtra, "Reminder")
-        intent.putExtra(messageExtra, binding.name.text.toString())
+        intent.putExtra(titleExtra, binding.name.text.toString())
+        intent.putExtra(messageExtra, binding.note.text.toString())
         intent.putExtra(reminderType, isAlarm)
+        intent.putExtra("ID", taskID.toString())
 
         pendingIntent = PendingIntent.getBroadcast(
             context.applicationContext,
@@ -140,6 +145,7 @@ class ReminderService(private val context: Context, private val binding: TaskCre
         alarmManager = (context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager)!!
         val localDateTime = LocalDateTime.of(date, time)
         val timeInMillis = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        Log.i("timeInMillis", "Time in millis: $timeInMillis")
 
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,

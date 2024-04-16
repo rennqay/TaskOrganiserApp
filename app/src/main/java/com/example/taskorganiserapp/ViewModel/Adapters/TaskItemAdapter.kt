@@ -1,9 +1,9 @@
-package com.example.taskorganiserapp
+package com.example.taskorganiserapp.ViewModel.Adapters
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.taskorganiserapp.Model.Entities.TaskItem
 import com.example.taskorganiserapp.databinding.TaskItemBinding
 
 class TaskItemAdapter(
@@ -23,4 +23,12 @@ class TaskItemAdapter(
     }
 
     override fun getItemCount(): Int = taskItems.size
+}
+
+
+
+interface TaskItemClickListener {
+    fun editTaskItem(task: TaskItem)
+    fun setCompleteTaskItem(task: TaskItem)
+    fun setIncompleteTaskItem(task: TaskItem)
 }

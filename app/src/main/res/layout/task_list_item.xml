@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:src="@drawable/list_icon"
-        app:tint="@color/black"/>
+        app:tint="@color/blue3"/>
 
     <TextView
         android:id="@+id/taskListName"

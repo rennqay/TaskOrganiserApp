@@ -1,4 +1,4 @@
-package com.example.taskorganiserapp
+package com.example.taskorganiserapp.View
 
 import android.content.Context
 import android.content.Intent
@@ -8,15 +8,17 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.map
+import com.example.taskorganiserapp.Model.Entities.TaskItem
+import com.example.taskorganiserapp.Model.Entities.TaskList
+import com.example.taskorganiserapp.R
+import com.example.taskorganiserapp.ViewModel.TaskListViewModel
+import com.example.taskorganiserapp.ViewModel.TaskViewModel
 import com.example.taskorganiserapp.databinding.ActivityMainBinding
 import com.example.taskorganiserapp.databinding.SideViewOfTasklistBinding
-import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileWriter
 
-class AppBarActions(private val taskListViewModel: TaskListViewModel, private val taskViewModel: TaskViewModel, private val context: Context)
+class AppBar(private val taskListViewModel: TaskListViewModel, private val taskViewModel: TaskViewModel, private val context: Context)
 {
     private val activityMainBinding: ActivityMainBinding = ActivityMainBinding.inflate(LayoutInflater.from(context))
     private val sideSheetBinding: SideViewOfTasklistBinding = SideViewOfTasklistBinding.inflate(LayoutInflater.from(context))
@@ -106,7 +108,7 @@ class AppBarActions(private val taskListViewModel: TaskListViewModel, private va
 
                 writer.append(tasks[i].date.toString() + "\n")
             }
-            writer.append("Priority: " + tasks[i].convertPriorityToString() + "\n")
+            writer.append("Priority: " + tasks[i].getPriorityInString() + "\n")
 
             if(!tasks[i].subtasks.isNullOrEmpty()) {
                 writer.append("Subtasks:\n")

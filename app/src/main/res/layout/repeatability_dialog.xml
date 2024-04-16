@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:minWidth="200dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
@@ -17,75 +18,30 @@
             android:layout_height="wrap_content"
             android:layout_margin="12dp"
             android:layout_gravity="center"
-            android:text="Ustaw przypomnienie"
+            android:text="Ustaw powtarzalność"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/white"/>
 
     </LinearLayout>
 
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/reminderType"
-        android:layout_width="match_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:layout_marginHorizontal="12dp"
-        android:layout_marginTop="12dp"
-        app:selectionRequired="true"
-        app:singleSelection="true"
-        app:checkedButton="@+id/notification">
-
-        <Button
-            style="?attr/materialButtonOutlinedStyle"
-            android:id="@+id/notification"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Powiadomienie"/>
-
-        <Button
-            style="?attr/materialButtonOutlinedStyle"
-            android:id="@+id/alarm"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Alarm"/>
-
-    </com.google.android.material.button.MaterialButtonToggleGroup>
-
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/reminderTimeType"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="12dp"
-        android:layout_marginBottom="12dp"
-        app:selectionRequired="true"
-        app:singleSelection="true"
-        app:checkedButton="@+id/onTime">
-
-        <Button
-            style="?attr/materialButtonOutlinedStyle"
-            android:id="@+id/onTime"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Na czas" />
-        <Button
-            style="?attr/materialButtonOutlinedStyle"
-            android:id="@+id/beforeTime"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Przed czasem" />
-
-    </com.google.android.material.button.MaterialButtonToggleGroup>
+        android:layout_gravity="center"
+        android:text="Co jaki czas zadanie ma się\npowtarzać?"
+        android:textAlignment="center"
+        android:textSize="14sp"
+        android:textStyle="bold"/>
 
     <LinearLayout
         android:id="@+id/pickers"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="12dp"
-        android:layout_marginBottom="12dp"
-        android:visibility="gone">
+        >
 
         <NumberPicker
             android:id="@+id/numberPicker"
@@ -106,6 +62,29 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Powtórz je: "
+            android:textSize="15sp"
+            android:textStyle="bold"/>
+
+        <EditText
+            android:id="@+id/repeatValue"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:inputType="number"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/blue3"
         android:orientation="vertical">
 
         <TextView
@@ -114,11 +93,11 @@
             android:layout_marginTop="4dp"
             android:layout_marginHorizontal="12dp"
             android:layout_gravity="center"
-            android:text="Przypomnienie ustawione na:"
-            android:textSize="16sp"/>
+            android:text="Powtarzalność ustawiona na:"
+            android:textSize="14sp"/>
 
         <TextView
-            android:id="@+id/reminderValue"
+            android:id="@+id/repeatabilityValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="12dp"

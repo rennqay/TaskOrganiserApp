@@ -1,4 +1,4 @@
-package com.example.taskorganiserapp
+package com.example.taskorganiserapp.ViewModel.Adapters
 
 import android.content.Context
 import android.graphics.Paint
@@ -6,8 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.taskorganiserapp.Model.Entities.SubtaskItem
 import com.example.taskorganiserapp.databinding.SubtaskItemBinding
-import com.example.taskorganiserapp.databinding.TaskItemBinding
 
 class SubtaskItemAdapter(
     private val subtaskItems: List<SubtaskItem>,

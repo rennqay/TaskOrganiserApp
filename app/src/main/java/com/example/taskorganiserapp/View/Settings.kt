@@ -1,4 +1,4 @@
-package com.example.taskorganiserapp
+package com.example.taskorganiserapp.View
 
 import android.os.Bundle
 import android.util.Log
@@ -8,6 +8,10 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
+import com.example.taskorganiserapp.Model.Entities.TaskList
+import com.example.taskorganiserapp.Model.Services.SharedPreferencesManager
+import com.example.taskorganiserapp.R
+import com.example.taskorganiserapp.ViewModel.TaskViewModel
 import com.example.taskorganiserapp.databinding.SettingsFragmentBinding
 
 class Settings(private val preferences: SharedPreferencesManager, private val viewModel: TaskViewModel, private val taskList: TaskList): Fragment() {
@@ -27,7 +31,6 @@ class Settings(private val preferences: SharedPreferencesManager, private val vi
         Log.i("sortType", "selected sorttype: " + preferences.getSortType().toString())
 
         binding.backButton.setOnClickListener {
-
             requireActivity().supportFragmentManager.popBackStack()
         }
 
@@ -37,11 +40,9 @@ class Settings(private val preferences: SharedPreferencesManager, private val vi
                 viewModel.setTasksFromTaskList(taskList, 0)
                 Log.i("sortType", position.toString())
             }
-
             override fun onNothingSelected(parent: AdapterView<*>?) {
                 TODO("Not yet implemented")
             }
-
         }
         super.onViewCreated(view, savedInstanceState)
     }

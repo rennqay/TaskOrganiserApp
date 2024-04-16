@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:paddingStart="12dp"
             android:layout_gravity="center"
-            android:text="Settings"
+            android:text="Ustawienia"
             android:textSize="22sp"
             android:textStyle="bold"
             android:textColor="@color/white"/>
@@ -53,7 +53,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Sort tasks by "
+            android:text="Sortuj zadania wedle "
             android:textSize="16sp"
             android:textStyle="bold"/>
 
@@ -70,6 +70,117 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/black"/>
+        android:background="@color/blue1"/>
+
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_margin="12dp"-->
+<!--        android:orientation="horizontal">-->
+
+<!--        <ImageView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_margin="12dp"-->
+<!--            android:src="@drawable/auto_delete_icon"-->
+<!--            android:scaleX="1.2"-->
+<!--            android:scaleY="1.2"-->
+<!--            app:tint="@color/blue2" />-->
+
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center"-->
+<!--            android:text="Automatically delete\ncompleted tasks after "-->
+<!--            android:lines="2"-->
+<!--            android:textSize="16sp"-->
+<!--            android:textStyle="bold"/>-->
+
+<!--        <Spinner-->
+<!--            android:id="@+id/deleteAfter"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center"-->
+<!--            android:layout_marginStart="12dp"-->
+<!--            android:minHeight="48dp" />-->
+<!--    </LinearLayout>-->
+
+<!--    <View-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="1dp"-->
+<!--        android:background="@color/blue1" />-->
+
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_margin="12dp"-->
+<!--        android:orientation="horizontal">-->
+
+<!--        <ImageView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_margin="12dp"-->
+<!--            android:src="@drawable/percent_icon"-->
+<!--            android:scaleX="1.2"-->
+<!--            android:scaleY="1.2"-->
+<!--            app:tint="@color/blue2" />-->
+
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center"-->
+<!--            android:text="Show progress bar "-->
+<!--            android:textSize="16sp"-->
+<!--            android:textStyle="bold"/>-->
+
+<!--        <Spinner-->
+<!--            android:id="@+id/showProgressBar"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center"-->
+<!--            android:layout_marginStart="12dp"-->
+<!--            android:minHeight="48dp" />-->
+<!--    </LinearLayout>-->
+
+<!--    <View-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="1dp"-->
+<!--        android:background="@color/blue1"/>-->
+
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_margin="12dp"-->
+<!--        android:orientation="horizontal">-->
+
+<!--        <ImageView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_margin="12dp"-->
+<!--            android:src="@drawable/delete_forever_icon"-->
+<!--            android:scaleX="1.2"-->
+<!--            android:scaleY="1.2"-->
+<!--            app:tint="@color/blue2" />-->
+
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center"-->
+<!--            android:text="Reset all data "-->
+<!--            android:textSize="16sp"-->
+<!--            android:textStyle="bold"/>-->
+
+<!--        <com.google.android.material.button.MaterialButton-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginHorizontal="18dp"-->
+<!--            android:text="CLICK HERE TO RESET"/>-->
+
+<!--    </LinearLayout>-->
+
+<!--    <View-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="1dp"-->
+<!--        android:background="@color/blue1"/>-->
 
 </LinearLayout>

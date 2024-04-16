@@ -1,17 +1,12 @@
-package com.example.taskorganiserapp
+package com.example.taskorganiserapp.Model.Entities
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Fts4
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import java.util.UUID
-
+import ulid.ULID
 
 @Entity(tableName = "task_lists_table")
-
 data class TaskList (
-    @PrimaryKey(autoGenerate = true) var id: Long = 0,
+    @PrimaryKey var id: ULID = ULID.nextULID(),
     var quantityOfToDoTasks: Int,
     var quantityOfCompletedTasks: Int,
     var name: String,

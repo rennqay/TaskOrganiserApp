@@ -1,9 +1,6 @@
-package com.example.taskorganiserapp
+package com.example.taskorganiserapp.Model.Entities
 
-import androidx.room.Entity
-import androidx.room.Fts4
-import androidx.room.PrimaryKey
-import java.util.UUID
+import com.example.taskorganiserapp.R
 
 data class SubtaskItem(
     var id: Int,

@@ -1,4 +1,4 @@
-package com.example.taskorganiserapp
+package com.example.taskorganiserapp.View
 
 import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
@@ -9,9 +9,26 @@ import android.view.View
 import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.taskorganiserapp.Model.Entities.SubtaskItem
+import com.example.taskorganiserapp.Model.Entities.TaskItem
+import com.example.taskorganiserapp.Model.Entities.TaskList
+import com.example.taskorganiserapp.Model.Services.SharedPreferencesManager
+import com.example.taskorganiserapp.Model.TaskOrganiserApp
+import com.example.taskorganiserapp.R
+import com.example.taskorganiserapp.ViewModel.Adapters.SubtaskItemClickListener
+import com.example.taskorganiserapp.ViewModel.Adapters.TaskItemAdapter
+import com.example.taskorganiserapp.ViewModel.Adapters.TaskItemClickListener
+import com.example.taskorganiserapp.ViewModel.Adapters.TaskListClickListener
+import com.example.taskorganiserapp.ViewModel.TaskListModelFactory
+import com.example.taskorganiserapp.ViewModel.TaskListViewModel
+import com.example.taskorganiserapp.ViewModel.Adapters.TaskListsAdapter
+import com.example.taskorganiserapp.ViewModel.TaskModelFactory
+import com.example.taskorganiserapp.ViewModel.TaskViewModel
 import com.example.taskorganiserapp.databinding.ActivityMainBinding
 import com.example.taskorganiserapp.databinding.SideViewOfTasklistBinding
 import com.google.android.material.sidesheet.SideSheetBehavior
@@ -19,44 +36,57 @@ import com.google.android.material.sidesheet.SideSheetCallback
 import com.google.android.material.sidesheet.SideSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
+import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickListener, SubtaskItemClickListener {
-
+class MainActivity : AppCompatActivity(), TaskItemClickListener, SubtaskItemClickListener {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var sideSheetDialog: SideSheetDialog
-    private lateinit var sideSheetBinding: SideViewOfTasklistBinding
-    private lateinit var currentTaskList: TaskList
-    private lateinit var sharedPreferencesManager: SharedPreferencesManager
-    private lateinit var appBarActions: AppBarActions
+    private lateinit var sideSheetDialog: SideSheet
+    private lateinit var appBarActions: AppBar
+    private val sharedPreferencesManager = SharedPreferencesManager(TaskOrganiserApp.appContext)
     private val taskListViewModel: TaskListViewModel by viewModels {
         TaskListModelFactory((application as TaskOrganiserApp).repository)
     }
     val taskViewModel: TaskViewModel by viewModels {
-        TaskViewModel.TaskModelFactory((application as TaskOrganiserApp).repository)
+        TaskModelFactory((application as TaskOrganiserApp).repository)
     }
     var tabPosition = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        appBarActions = AppBar(taskListViewModel, taskViewModel, this)
+        sideSheetDialog = SideSheet(taskViewModel, taskListViewModel, this)
         binding = ActivityMainBinding.inflate(layoutInflater)
-        sharedPreferencesManager = SharedPreferencesManager(TaskOrganiserApp.appContext)
-        sideSheetDialog = SideSheetDialog(this)
-        appBarActions = AppBarActions(taskListViewModel, taskViewModel, this)
         setContentView(binding.root)
+        setObservers()
 
         if(sharedPreferencesManager.isFirstRun()) {
-            taskListViewModel.addTaskList(TaskList(name = "Wszystkie", quantityOfCompletedTasks = 0, quantityOfToDoTasks =  0, isEditable = false))
-            currentTaskList = TaskList(name = "Wszystkie", quantityOfCompletedTasks = 0, quantityOfToDoTasks =  0, isEditable = false)
+            val defaultTaskList = TaskList(name = "Wszystkie", quantityOfCompletedTasks = 0, quantityOfToDoTasks =  0, isEditable = false)
+            taskListViewModel.addTaskList(defaultTaskList)
+            taskViewModel.selectedList.value = defaultTaskList
         }
-        currentTaskList = TaskList(name = "Wszystkie", quantityOfCompletedTasks = 0, quantityOfToDoTasks =  0, isEditable = false)
-        binding.topAppBar.title = currentTaskList.name
+        else {
+            taskListViewModel.firstTaskList.observe(this) {
+                taskViewModel.selectedList.value = taskListViewModel.firstTaskList.value
+                taskListViewModel.firstTaskList.removeObservers(this@MainActivity)
+            }
+        }
 
-        setSideSheet()
-        setObservers()
+        lifecycleScope.launch {
+            taskViewModel.selectedList.collect {
+                if(it != null) {
+                    binding.topAppBar.title = taskViewModel.selectedList.value!!.name
+                    taskViewModel.taskItems.removeObservers(this@MainActivity)
+                    taskViewModel.selectedToDoTaskItems.removeObservers(this@MainActivity)
+                    taskViewModel.selectedCompletedTaskItems.removeObservers(this@MainActivity)
+                    taskViewModel.setTasksFromTaskList(taskViewModel.selectedList.value!!, tabPosition)
+                    setObservers()
+                }
+            }
+        }
         setGestures()
 
         binding.addTaskFAB.setOnClickListener {
-            val taskCreator = TaskCreator(null, currentTaskList.id, taskViewModel)
+            val taskCreator = TaskCreator(null, taskViewModel.selectedList.value!!.id, taskViewModel)
             taskCreator.show(supportFragmentManager, "newTaskTag")
         }
 
@@ -74,13 +104,13 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
             })
 
         binding.topAppBar.setOnClickListener {
-            appBarActions.editTaskListName(currentTaskList)
+            appBarActions.editTaskListName(taskViewModel.selectedList.value!!)
         }
 
         binding.topAppBar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.deleteList -> {
-                    currentTaskList = appBarActions.deleteTaskList(currentTaskList, tabPosition)
+                    taskViewModel.selectedList.value = appBarActions.deleteTaskList(taskViewModel.selectedList.value!!, tabPosition)
                     true
                 }
                 R.id.search -> {
@@ -89,21 +119,21 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
                     val dialogLayout = inflater.inflate(R.layout.add_list_dialog, null)
                     val nameField = dialogLayout.findViewById<EditText>(R.id.newListName)
                     with(alertDialog) {
-                        setTitle("Search task by name")
+                        setTitle("Wyszukaj zadanie po nazwie")
                         setPositiveButton("OK") { _, _ ->
                             val name = nameField.text.toString()
                             taskViewModel.findTasksByName(name)
                             sideSheetDialog.dismiss()
                             Log.i("search", "Found by name: $name")
                         }
-                        setNegativeButton("Cancel") { _, _ -> }
+                        setNegativeButton("Anuluj") { _, _ -> }
                         setView(dialogLayout)
                         show()
                     }
                     true
                 }
                 R.id.settings -> {
-                    val settings = Settings(sharedPreferencesManager, taskViewModel, currentTaskList)
+                    val settings = Settings(sharedPreferencesManager, taskViewModel, taskViewModel.selectedList.value!!)
                     supportFragmentManager.beginTransaction()
                         .replace(android.R.id.content, settings)
                         .addToBackStack(null)
@@ -111,7 +141,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
                     true
                 }
                 R.id.share -> {
-                    appBarActions.shareTaskList(currentTaskList)
+                    appBarActions.shareTaskList(taskViewModel.selectedList.value!!)
                     true
                 }
                 else -> false
@@ -127,68 +157,25 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
             }
         }
         taskViewModel.selectedToDoTaskItems.observe(this) {
-            val tabName = "To Do (${taskViewModel.selectedToDoTaskItems.value?.size})"
+            val tabName = "Do zrobienia (${taskViewModel.selectedToDoTaskItems.value?.size ?:0})"
             binding.tabLayout.getTabAt(0)?.text = tabName
-            currentTaskList.quantityOfToDoTasks = taskViewModel.selectedToDoTaskItems.value?.size!!
-            taskListViewModel.updateTaskList(currentTaskList)
+            if(taskViewModel.selectedList.value != null) {
+                if(taskViewModel.selectedToDoTaskItems.value?.size != null)
+                    taskViewModel.selectedList.value!!.quantityOfToDoTasks = taskViewModel.selectedToDoTaskItems.value?.size!!
+                else
+                    taskViewModel.selectedList.value!!.quantityOfToDoTasks = 0
+                taskListViewModel.updateTaskList(taskViewModel.selectedList.value!!)
+            }
         }
         taskViewModel.selectedCompletedTaskItems.observe(this) {
-            val tabName = "Completed (${taskViewModel.selectedCompletedTaskItems.value?.size})"
+            val tabName = "Wykonane (${taskViewModel.selectedCompletedTaskItems.value?.size ?:0})"
             binding.tabLayout.getTabAt(1)?.text = tabName
-            currentTaskList.quantityOfCompletedTasks = taskViewModel.selectedCompletedTaskItems.value?.size!!
-            taskListViewModel.updateTaskList(currentTaskList)
-        }
-    }
-
-    private fun setSideSheet() {
-        sideSheetDialog.behavior.addCallback(object : SideSheetCallback() {
-            override fun onStateChanged(sheet: View, newState: Int) {
-
-                if (newState == SideSheetBehavior.STATE_DRAGGING) {
-                    sideSheetDialog.behavior.state = SideSheetBehavior.STATE_EXPANDED
-                }
-            }
-            override fun onSlide(sheet: View, slideOffset: Float) {
-            }
-        })
-        sideSheetBinding = SideViewOfTasklistBinding.inflate(layoutInflater)
-        sideSheetDialog.isDismissWithSheetAnimationEnabled = true
-        sideSheetDialog.setSheetEdge(Gravity.START)
-        sideSheetDialog.setCanceledOnTouchOutside(true)
-        sideSheetDialog.setContentView(sideSheetBinding.root)
-
-        taskListViewModel.listOfTaskLists.observe(this) {
-            sideSheetBinding.taskLists.apply {
-                layoutManager = LinearLayoutManager(applicationContext)
-                adapter = TaskListsAdapter(it, this@MainActivity)
-            }
-        }
-
-        sideSheetBinding.backButton.setOnClickListener {
-            sideSheetDialog.dismiss()
-        }
-        sideSheetBinding.addTaskListButton.setOnClickListener{
-            val newTaskList = TaskList(name = "Lista", quantityOfToDoTasks = 0, quantityOfCompletedTasks = 0, isEditable = true)
-            val alertDialog = AlertDialog.Builder(this)
-            val inflater = layoutInflater
-            val dialogLayout = inflater.inflate(R.layout.add_list_dialog, null)
-            val name = dialogLayout.findViewById<EditText>(R.id.newListName)
-            with(alertDialog) {
-                setTitle("Add new list")
-                setPositiveButton("OK") { _, _ ->
-                    newTaskList.name = name.text.toString()
-                    taskListViewModel.addTaskList(newTaskList)
-                    Log.i("TaskList", "lastInserted=" + taskListViewModel.lastInsertedID)
-                    newTaskList.id = taskListViewModel.lastInsertedID
-                    currentTaskList = newTaskList
-                    binding.topAppBar.title = currentTaskList.name
-                    taskViewModel.setTasksFromTaskList(currentTaskList, tabPosition)
-                    sideSheetDialog.dismiss()
-                    Log.i("TaskList", "Added TaskList id=" + newTaskList.id + " name=" + newTaskList.name)
-                }
-                setNegativeButton("Cancel") { _, _ -> }
-                setView(dialogLayout)
-                show()
+            if(taskViewModel.selectedList.value != null) {
+                if(taskViewModel.selectedCompletedTaskItems.value?.size != null)
+                    taskViewModel.selectedList.value!!.quantityOfCompletedTasks = taskViewModel.selectedCompletedTaskItems.value?.size!!
+                else
+                    taskViewModel.selectedList.value!!.quantityOfCompletedTasks = 0
+                taskListViewModel.updateTaskList(taskViewModel.selectedList.value!!)
             }
         }
     }
@@ -209,8 +196,8 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
                 taskViewModel.deleteTaskItem(deletedTask)
                 binding.taskList.adapter?.notifyItemRemoved(viewHolder.adapterPosition)
 
-                Snackbar.make(binding.taskList, "Deleted task: " + deletedTask.name, Snackbar.LENGTH_LONG)
-                    .setAction("UNDO") {
+                Snackbar.make(binding.taskList, "Usunięto zadanie: " + deletedTask.name, Snackbar.LENGTH_LONG)
+                    .setAction("COFNIJ") {
                         taskViewModel.addTaskItem(deletedTask)
                         binding.taskList.adapter?.notifyDataSetChanged()
                     }.show()
@@ -219,7 +206,7 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
     }
 
     override fun editTaskItem(task: TaskItem) {
-        TaskCreator(task, currentTaskList.id, taskViewModel).show(supportFragmentManager, "editTaskTag")
+        TaskCreator(task, taskViewModel.selectedList.value!!.id, taskViewModel).show(supportFragmentManager, "editTaskTag")
     }
 
     override fun setCompleteTaskItem(task: TaskItem) {
@@ -228,17 +215,6 @@ class MainActivity : AppCompatActivity(), TaskItemClickListener, TaskListClickLi
 
     override fun setIncompleteTaskItem(task: TaskItem) {
         taskViewModel.setState(task, false)
-    }
-
-    override fun setTaskList(taskList: TaskList) {
-        currentTaskList = taskList
-        binding.topAppBar.title = taskList.name
-        taskViewModel.taskItems.removeObservers(this)
-        taskViewModel.selectedToDoTaskItems.removeObservers(this)
-        taskViewModel.selectedCompletedTaskItems.removeObservers(this)
-        taskViewModel.setTasksFromTaskList(taskList, tabPosition)
-        setObservers()
-        sideSheetDialog.dismiss()
     }
 
     override fun deleteSubtaskItem(subtask: SubtaskItem) {

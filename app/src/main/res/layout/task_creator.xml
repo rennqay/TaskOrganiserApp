@@ -6,13 +6,13 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    tools:context=".TaskCreator">
+    tools:context=".View.TaskCreator">
 
     <TextView
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Task Creator"
+        android:text="Kreator zadań"
         android:textSize="24sp"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="10dp"
@@ -34,7 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:maxLines="1"
-            android:hint="Name"
+            android:hint="Nazwa"
             android:imeOptions="actionDone"/>
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -52,7 +52,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:maxLines="1"
-            android:hint="Description">
+            android:hint="Notatka">
 
         </com.google.android.material.textfield.TextInputEditText>
     </com.google.android.material.textfield.TextInputLayout>
@@ -60,7 +60,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Priority"
+        android:text="Priorytet"
         android:textSize="16sp"
         android:textStyle="bold"
         android:layout_marginTop="10dp"
@@ -77,26 +77,26 @@
 
             <RadioButton
                 android:id="@+id/normal"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="3"
-                android:text="Normal" />
+                android:textSize="13dp"
+                android:text="Normalny" />
 
             <RadioButton
                 android:id="@+id/high"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="3"
+                android:textSize="13dp"
                 android:drawableStart="@drawable/priority_high_flag"
-                android:text="High" />
+                android:text="Wysoki" />
 
             <RadioButton
                 android:id="@+id/veryHigh"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="4"
+                android:textSize="13dp"
                 android:drawableStart="@drawable/priority_veryhigh_flag"
-                android:text="Very High"/>
+                android:text="Najwyższy"/>
 
         </RadioGroup>
 
@@ -111,7 +111,7 @@
             style="@style/TextAppearance.AppCompat.Title"
             android:layout_width="wrap_content"
             android:layout_height="24dp"
-            android:text="Subtasks:"
+            android:text="Podzadania:"
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -123,8 +123,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="6dp"
-            android:hint="Enter here subtask name..."
-            android:textSize="16sp"
+            android:hint="Wpisz tutaj nazwę podzadania"
+            android:textSize="14sp"
             app:layout_constrainedWidth="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/addSubtask"
@@ -191,9 +191,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="7"
             android:layout_gravity="center"
-            android:text="SELECT DATE"
+            android:text="USTAW DATE"
             app:icon="@drawable/calendar_icon"
-            app:iconGravity="textStart"/>
+            app:iconGravity="textStart" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/deleteDate"
@@ -225,7 +225,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="7"
-            android:text="SELECT TIME"
+            android:text="USTAW GODZINE"
             app:icon="@drawable/time_icon"
             app:iconGravity="textStart"/>
 
@@ -259,12 +259,46 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="7"
-            android:text="SET REMINDER"
+            android:text="USTAW PRZYPOMNIENIE"
             app:icon="@drawable/reminder_icon"
             app:iconGravity="textStart"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/deleteReminder"
+            android:layout_width="0dp"
+            android:minWidth="48dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:visibility="gone"
+            app:icon="@drawable/delete_button"
+            style="?attr/materialIconButtonStyle"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginHorizontal="20dp">
+
+        <ImageView
+            android:id="@+id/leftMarginOfRepeatability"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:visibility="gone" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/setRepeatabilityButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="7"
+            android:text="USTAW POWTARZALNOŚĆ"
+            app:icon="@drawable/repeatability_icon"
+            app:iconGravity="textStart"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/deleteRepeatability"
             android:layout_width="0dp"
             android:minWidth="48dp"
             android:layout_height="wrap_content"
@@ -288,7 +322,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
             android:layout_toLeftOf="@id/saveButton"
-            android:text="CANCEL"
+            android:text="ANULUJ"
             style="@style/Widget.Material3.Button.OutlinedButton"/>
 
         <com.google.android.material.button.MaterialButton
@@ -296,7 +330,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:text="SAVE"
+            android:text="ZAPISZ"
             app:icon="@drawable/confirm_button"
             app:iconGravity="textEnd"/>
 

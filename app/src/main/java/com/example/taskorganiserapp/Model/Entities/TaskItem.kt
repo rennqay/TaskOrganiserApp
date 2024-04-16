@@ -1,7 +1,9 @@
-package com.example.taskorganiserapp
+package com.example.taskorganiserapp.Model.Entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.taskorganiserapp.R
+import ulid.ULID
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -13,8 +15,8 @@ const val VERY_HIGH = 3
 
 @Entity(tableName = "task_item_table")
 data class TaskItem(
-    @PrimaryKey(autoGenerate = true) var id: Long = 0,
-    var listID: Long,
+    @PrimaryKey var id: ULID = ULID.nextULID(),
+    var listID: ULID,
     var name: String,
     var note: String?,
     var time: LocalTime?,
@@ -23,7 +25,6 @@ data class TaskItem(
     var completionTime: LocalDateTime?,
     var priority: Int,
     var isCompleted: Boolean,
-    var isDelayed: Boolean,
     var subtasks: List<SubtaskItem>?
     ) {
 
@@ -38,16 +39,22 @@ data class TaskItem(
         completionTime = LocalDateTime.now()
     }
 
-    fun convertCompletionTimeToString(): String? {
+    fun getCompletionTimeInString(): String? {
         return completionTime?.format(DateTimeFormatter.ofPattern("E d MMM - HH:mm"))
     }
 
-    fun convertPriorityToString(): String {
+    fun getPriorityInString(): String {
         return when(priority) {
             NORMAL -> "Normal"
             HIGH -> "High"
             VERY_HIGH -> "Very High"
             else -> "Normal"
+        }
+    }
+
+    companion object {
+        fun getULID(): ULID {
+            return ULID.nextULID()
         }
     }
 }
